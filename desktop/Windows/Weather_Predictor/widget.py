@@ -14,4 +14,9 @@ if __name__ == "__main__":
     y = screen.height()*0.5-h/2
     window.setGeometry(x, y, w, h)
     window.show()
+
+    #file = .open("style.css")
+    with open('style.css', 'r') as file:
+        app.setStyleSheet(file.read())
+
     sys.exit(app.exec())
