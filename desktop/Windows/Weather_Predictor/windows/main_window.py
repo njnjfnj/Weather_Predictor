@@ -14,7 +14,7 @@ class Main_window(QtWidgets.QWidget):
     def __init__(self, screen, parent=None):
         super().__init__(parent)
 
-        self._buttonCountry = QtWidgets.QLabel()
+        self._buttonCountry = QtWidgets.QPushButton()
         self._textLine = QtWidgets.QLineEdit()
         self._buttonPredict = QtWidgets.QPushButton()
 
@@ -29,17 +29,43 @@ class Main_window(QtWidgets.QWidget):
         self._plot_graph = pg.PlotWidget()
         self._buttonArrowRight = QtWidgets.QPushButton()
 
-        self._labelPickedDate = QtWidgets.QLabel("00:00:00")
+        self._labelPickedDate = QtWidgets.QLabel("00.00.00")
+
 
 
         #self._textLine.setPlaceholderText("type a city here")
         self._dateEdit1.setDateTime(QtCore.QDateTime.currentDateTime())
         self._dateEdit2.setDateTime(QtCore.QDateTime.currentDateTime())
 
-        pm1 = QtGui.QPixmap("icons/icoEarth.png")
-        w1 = self._buttonCountry.contentsRect().width()
-        #pm1 = pm1.scaledToWidth(pm1.width()/w1, QtCore.Qt.SmoothTransformation)
-        self._buttonCountry.setPixmap(pm1)
+        self._textLine.setMinimumHeight(35)
+
+        pm1 = QtGui.QPixmap("icons/icoUkraine.png")
+        self._buttonCountry.setIcon(QtGui.QIcon(pm1))
+        self._buttonCountry.setMinimumWidth(40)
+        self._buttonCountry.setMinimumHeight(40)
+        pm1 = QtGui.QPixmap("icons/icoSearch.png")
+        self._buttonPredict.setIcon(QtGui.QIcon(pm1))
+        self._buttonPredict.setMinimumWidth(40)
+        self._buttonPredict.setMinimumHeight(40)
+        pm1 = QtGui.QPixmap("icons/icoSettings.png")
+        self._buttonSettings.setIcon(QtGui.QIcon(pm1))
+        self._buttonSettings.setMaximumWidth(35)
+        pm1 = QtGui.QPixmap("icons/icoArrowRight.png")
+        self._buttonArrowRight.setIcon(QtGui.QIcon(pm1))
+        pm1 = QtGui.QPixmap("icons/icoArrowLeft.png")
+        self._buttonArrowLeft.setIcon(QtGui.QIcon(pm1))
+        self._buttonArrowRight.setMinimumHeight(70)
+        self._buttonArrowLeft.setMinimumHeight(70)
+
+        self._dateEdit1.setMinimumHeight(30)
+        self._dateEdit2.setMinimumHeight(30)
+        self._dateEdit1.setMinimumWidth(85)
+        self._dateEdit2.setMinimumWidth(85)
+
+        self._plot_graph.setBackground("w")
+
+
+
 
         self._mainVbl = QtWidgets.QVBoxLayout()
 
@@ -49,18 +75,19 @@ class Main_window(QtWidgets.QWidget):
         self._hbl1.addWidget(self._buttonPredict)
         self._mainVbl.addLayout(self._hbl1)
 
-        h = self._hbl1.geometry().height()
-        qDebug(str(h))
-        self._mainVbl.addSpacing(h)
-
         self._hbl2 = QtWidgets.QHBoxLayout()
-        self._hbl2.addWidget(self._labelShowWeather1)
-        self._hbl2.addWidget(self._dateEdit1)
-        self._hbl2.addWidget(self._labelShowWeather2)
-        self._hbl2.addWidget(self._dateEdit2)
+        self._hbl21 = QtWidgets.QHBoxLayout()
+        self._hbl21.addWidget(self._labelShowWeather1)
+        self._hbl21.addWidget(self._dateEdit1)
+        self._hbl21.addWidget(self._labelShowWeather2)
+        self._hbl21.addWidget(self._dateEdit2)
+        self._hbl21.setSpacing(15)
+        self._hbl2.addLayout(self._hbl21)
         self._hbl2.addWidget(self._buttonSettings)
+        self._hbl21.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         self._mainVbl.addLayout(self._hbl2)
-        #self._mainVbl.addSpacing(100)
+
+        self._mainVbl.addSpacing(14)
 
         self._hbl3 = QtWidgets.QHBoxLayout()
         self._hbl3.addWidget(self._buttonArrowLeft)
@@ -68,9 +95,16 @@ class Main_window(QtWidgets.QWidget):
         self._hbl3.addWidget(self._buttonArrowRight)
         self._mainVbl.addLayout(self._hbl3)
 
-        self._mainVbl.addWidget(self._labelPickedDate)
+        self._hbl4 = QtWidgets.QHBoxLayout()
+        self._hbl4.addWidget(self._labelPickedDate)
+        self._hbl4.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self._mainVbl.addLayout(self._hbl4)
 
         self.setLayout(self._mainVbl)
+
+        self.setMinimumHeight(630)
+        self.setObjectName("main_window")
+        self.setWindowTitle("Weather Predictor")
 
 
 
@@ -79,7 +113,7 @@ class Main_window(QtWidgets.QWidget):
             with QtGui.QPainter(self) as p:
                 rect1 = self._hbl1.geometry()
                 rect2 = self._hbl2.geometry()
-                temp = rect1.height()+rect1.height()*0.75
+                temp = rect1.height()+rect1.height()*0.333
 
                 p.setPen(QtGui.QColor("#FFC700"))
                 p.setBrush(QtGui.QBrush(QtGui.QColor("#FFC700"), QtCore.Qt.SolidPattern))
@@ -87,6 +121,6 @@ class Main_window(QtWidgets.QWidget):
 
                 p.setPen(QtGui.QColor("#FFD53F"))
                 p.setBrush(QtGui.QBrush(QtGui.QColor("#FFD53F"), QtCore.Qt.SolidPattern))
-                p.drawRect(0, temp, self.width(), rect2.height()+rect2.height()*0.75)
+                p.drawRect(0, temp, self.width(), rect2.height()+rect2.height()*0.40)
 
 
