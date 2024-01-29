@@ -16,20 +16,23 @@ token_auth = HTTPTokenAuth(scheme="Bearer")
 @app.route("/Auth")
 @token_auth.login_required
 def Auth():
-    return "OK"
+    return flask.jsonify({"Status":"OK"})
 
 @app.route("/Predict/<id>")
 @token_auth.login_required
 def Predict(id):
     #predicting weather
-    return id  
+    return flask.jsonify({
+        "Status":"OK",
+        "Data": id
+        })  
 
 
 @token_auth.verify_token
 def verify_token(token):
     if token not in allowed_tokens:
         return None
-    return "OK" 
+    return True
 
 
 
