@@ -1,3 +1,3 @@
 {
-    "files": ["windows/main_window.py","widget.py","style.css"]
+    "files": ["windows/main_window.py","style.css","widget.py"]
 }

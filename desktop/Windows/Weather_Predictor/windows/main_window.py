@@ -1,10 +1,13 @@
-# This Python file uses the following encoding: utf-8
-#from PySide6 import QtCore
 from PySide6 import QtWidgets
 from PySide6.QtCore import qDebug
 from PySide6 import QtCore
 import pyqtgraph as pg
 from PySide6 import QtGui
+import requests
+import os
+import shutil
+import json
+import http
 
 #class Widget(QWidget):
 #    def __init__(self, parent=None):
@@ -13,7 +16,27 @@ from PySide6 import QtGui
 class Main_window(QtWidgets.QWidget):
     def __init__(self, screen, parent=None):
         super().__init__(parent)
+#Auth
+        checkAuth = 0
+        self._token = ""
+        if os.path.isfile("token.tok"):
+            checkAuth = 1
+            with open('token.tok', 'r') as file:
+                 self._token = file.read()
+        else:
+            authVbl = QtWidgets.QVBoxLayout()
+            authVbl.addWidget(QtWidgets.QLabel("Choose your token file:"))
+            buttonChooseToken = QtWidgets.QPushButton("Pick a token...")
+            authVbl.addWidget(buttonChooseToken)
+            authVbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            self.setLayout(authVbl)
 
+            buttonChooseToken.clicked.connect(self.slotChooseTokenButtonClicked)
+
+
+#
+
+#setup main vbl
         self._buttonCountry = QtWidgets.QPushButton()
         self._textLine = QtWidgets.QLineEdit()
         self._buttonPredict = QtWidgets.QPushButton()
@@ -29,9 +52,7 @@ class Main_window(QtWidgets.QWidget):
         self._plot_graph = pg.PlotWidget()
         self._buttonArrowRight = QtWidgets.QPushButton()
 
-        self._labelPickedDate = QtWidgets.QLabel("00.00.00")
-
-
+        self._labelPickedDate = QtWidgets.QLabel("Write something into text line")
 
         #self._textLine.setPlaceholderText("type a city here")
         self._dateEdit1.setDateTime(QtCore.QDateTime.currentDateTime())
@@ -39,7 +60,8 @@ class Main_window(QtWidgets.QWidget):
 
         self._textLine.setMinimumHeight(35)
 
-        pm1 = QtGui.QPixmap("icons/icoUkraine.png")
+        pm1 = QtGui.QPixmap("icons/icoEarth2.png")
+        self._country = "None"
         self._buttonCountry.setIcon(QtGui.QIcon(pm1))
         self._buttonCountry.setMinimumWidth(40)
         self._buttonCountry.setMinimumHeight(40)
@@ -100,12 +122,16 @@ class Main_window(QtWidgets.QWidget):
         self._hbl4.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self._mainVbl.addLayout(self._hbl4)
 
-        self.setLayout(self._mainVbl)
+        if checkAuth == 1: self.setLayout(self._mainVbl)
+#end of setup vbl
 
         self.setMinimumHeight(630)
         self.setObjectName("main_window")
         self.setWindowTitle("Weather Predictor")
 
+        self._config = json.load(open("configs\dev.json"))
+
+        self._buttonPredict.clicked.connect(self.slotPredictButtonClicked)
 
 
 
@@ -123,4 +149,44 @@ class Main_window(QtWidgets.QWidget):
                 p.setBrush(QtGui.QBrush(QtGui.QColor("#FFD53F"), QtCore.Qt.SolidPattern))
                 p.drawRect(0, temp, self.width(), rect2.height()+rect2.height()*0.40)
 
+    def slotChooseTokenButtonClicked(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, "Pick a token", "", "token.tok")
+
+        if os.path.isfile(path[0]):
+            shutil.copy(path[0], "token.tok")
+
+            #TODO: Fix bug with unchangeable Layout
+            self.setLayout(self._mainVbl)
+            self.update()
+            with open('token.tok', 'r') as file:
+                 self._token = file.read()
+
+    def slotPredictButtonClicked(self):
+        url1 = self._config["Host"] + "/Predict/" + self._country + "-" + self._textLine.text().replace(" ", "")
+        headers1={"Authorization": "Bearer " + self._token}
+        self.setDisabled(1)
+        #TODO: Fix checkConnection
+#        if not checkConnection(self._config["Host"]):
+#            self.setDisabled(0)
+#            self._labelPickedDate.setText("Server is unreachable")
+#            qDebug(self._config["Host"])
+#            return
+        response = requests.get(url=url1, headers=headers1)
+        self.setDisabled(0)
+        if response.status_code != 200:
+            self._labelPickedDate.setText("Unauthorized")
+            return
+
+        #some vizualization stuff
+        self._labelPickedDate.setText(response.json()["Data"])
+
+
+def checkConnection(url="localhost", timeout=3):
+    connection = http.client.HTTPConnection(url, timeout=timeout)
+    try:
+        connection.request("HEAD", "/")
+        connection.close()
+        return True
+    except Exception as exep:
+        return False
 
