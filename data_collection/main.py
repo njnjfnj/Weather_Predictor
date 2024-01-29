@@ -16,8 +16,8 @@ API_KEY = dotenv_values()['API_KEY']
 CITY_DATA_DIR='./city_weather_datasets/'
 
 datetime_format = '%Y-%m-%d %H:%M:%S'
-START_DATE = datetime.strptime('2023-01-30 00:00:00', datetime_format)
-END_DATE = to_gmt(datetime.strptime('2023-02-2 00:00:00', datetime_format))
+START_DATE = datetime.strptime('2023-02-02 00:00:00', datetime_format)
+END_DATE = to_gmt(datetime.strptime('2023-02-03 00:00:00', datetime_format))
 
 
 with open('cities/cities.csv', 'r') as cities_csv:
@@ -50,17 +50,19 @@ with open('cities/cities.csv', 'r') as cities_csv:
                 mkdir(city_directory)
 
             filename = path.join(city_directory, city[name_index].lower() + '.json')
+            existing_data = []
             
-            with open(filename, 'a+') as city_file:
-                city_file.seek(0)
-                content = city_file.read()
-                if content:
-                    content += ','
-                    content += '\n'
-                for i in range(0, len(arr)):
-                    json_str = json.dumps(arr[i])
-                    if i == (len(arr) - 1):
-                        city_file.write(content + json_str)
-                    else:
-                        city_file.write(content + json_str + ',' + '\n')
+            try:
+                with open(filename, 'r') as city_file:
+                        content = city_file.read()
+                        if content:
+                            existing_data = json.loads(content)
+            
+            except FileNotFoundError:
+                existing_data = []
+
+            existing_data.extend(arr)
+
+            with open(filename, 'w') as city_file:
+                json.dump(existing_data, city_file, indent=2)
 
