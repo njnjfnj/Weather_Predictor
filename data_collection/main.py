@@ -6,17 +6,20 @@ from datetime import date, datetime, timedelta
 from time import sleep, mktime
 load_dotenv()
 
-def to_gmt(dt):
-    if dt.utcoffset() is not None:
-        return dt - timedelta(seconds=dt.utcoffset().total_seconds())
-    else: return dt
-
 API_KEY = dotenv_values()['API_KEY']
 CITY_DATA_DIR='./city_weather_datasets/'
 
 datetime_format = '%Y-%m-%d %H:%M:%S'
-START_DATE = datetime.strptime('2023-01-02 00:00:00', datetime_format)
-END_DATE = to_gmt(datetime.strptime('2023-04-02 00:00:00', datetime_format))
+
+UTC_NOW = datetime.utcnow()
+LOCAL_NOW = datetime.now()
+
+TIME_DIFFERENCE = int((LOCAL_NOW - UTC_NOW).total_seconds() / 3600)
+print(TIME_DIFFERENCE)
+
+
+START_DATE = datetime.strptime('2023-02-03 00:00:00', datetime_format) + timedelta(hours=TIME_DIFFERENCE)
+END_DATE = datetime.strptime('2023-02-06 00:00:00', datetime_format) 
  
 CITY_WEATHER_COLUMNS = ['timestamp','temp','feels_like','pressure','humidity','temp_min','temp_max','wind_speed','wind_deg','clouds_coverage', 'weather_category','weather_description']
 
@@ -48,17 +51,31 @@ with open('cities/cities.csv', 'r') as cities_csv:
     name_index = header.index('name')
     lat_index = header.index('lat')
     lon_index = header.index('lon')
+    city_time_difference = header.index('time_difference')
     for i in range(1, len(cities)):
         arr = []
         city = cities[i]
+        time_difference = None
         
-        while START_DATE != END_DATE:
-            START_DATE = to_gmt(START_DATE)
-            NEXT_DATETIME = to_gmt(START_DATE + timedelta(hours=8))
+        while START_DATE <= END_DATE:
+            NEXT_DATETIME = START_DATE + timedelta(hours=4) 
+            if not time_difference:
+                if city[city_time_difference][0] == "-":
+                    time_difference = int(city[city_time_difference][1:]) * -1
+                else: time_difference = int(city[city_time_difference])
+                
+                START_DATE = START_DATE + timedelta(hours=time_difference)
+                print(START_DATE)
+                NEXT_DATETIME = START_DATE + timedelta(hours=4)
+            
+            print(START_DATE, NEXT_DATETIME)
+            
             url = f'https://history.openweathermap.org/data/2.5/history/city?lat={city[lat_index]}&lon={city[lon_index]}&type=hour&start={(mktime(START_DATE.timetuple()))}&end={(mktime(NEXT_DATETIME.timetuple()))}&appid={API_KEY}'
+            
             START_DATE = NEXT_DATETIME
 
             res = requests.get(url=url).json()
+            print(res)
             transofmed_weather = transform_weather_json(res)
 
             arr.append(transofmed_weather)
