@@ -1,5 +1,5 @@
+#from PySide6.QtCore import qDebug
 from PySide6 import QtWidgets
-from PySide6.QtCore import qDebug
 from PySide6 import QtCore
 import pyqtgraph as pg
 from PySide6 import QtGui
@@ -7,7 +7,7 @@ import requests
 import os
 import shutil
 import json
-import http
+
 
 #class Widget(QWidget):
 #    def __init__(self, parent=None):
@@ -25,15 +25,14 @@ class Main_window(QtWidgets.QWidget):
                  self._token = file.read()
         else:
             authVbl = QtWidgets.QVBoxLayout()
-            authVbl.addWidget(QtWidgets.QLabel("Choose your token file:"))
-            buttonChooseToken = QtWidgets.QPushButton("Pick a token...")
-            authVbl.addWidget(buttonChooseToken)
+            self._authLabel = QtWidgets.QLabel("Choose your token file:")
+            authVbl.addWidget(self._authLabel)
+            self._buttonChooseToken = QtWidgets.QPushButton("Pick a token...")
+            authVbl.addWidget(self._buttonChooseToken)
             authVbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
             self.setLayout(authVbl)
 
-            buttonChooseToken.clicked.connect(self.slotChooseTokenButtonClicked)
-
-
+            self._buttonChooseToken.clicked.connect(self.slotChooseTokenButtonClicked)
 #
 
 #setup main vbl
@@ -151,42 +150,57 @@ class Main_window(QtWidgets.QWidget):
 
     def slotChooseTokenButtonClicked(self):
         path = QtWidgets.QFileDialog.getOpenFileName(self, "Pick a token", "", "token.tok")
+        self._buttonChooseToken.setDisabled(1)
 
         if os.path.isfile(path[0]):
             shutil.copy(path[0], "token.tok")
-
-            #TODO: Fix bug with unchangeable Layout
-            self.setLayout(self._mainVbl)
-            self.update()
             with open('token.tok', 'r') as file:
-                 self._token = file.read()
+                self._token = file.read()
+            url1 = self._config["Host"] + "/Auth"
+            headers1={"Authorization": "Bearer " + self._token}
+            response = safeRequest("GET", url=url1, headers=headers1)
+
+            if response == None:
+                self._authLabel.setText("Server is unreachable")
+                os.remove("token.tok")
+                self._buttonChooseToken.setDisabled(0)
+                return
+            if response.status_code == 401:
+                self._authLabel.setText("Unauthorized: You have an incorrect/outdated token")
+                os.remove("token.tok")
+                self._buttonChooseToken.setDisabled(0)
+                return
+
+            QtWidgets.QWidget().setLayout(self.layout())
+            self.setLayout(self._mainVbl)
+
 
     def slotPredictButtonClicked(self):
         url1 = self._config["Host"] + "/Predict/" + self._country + "-" + self._textLine.text().replace(" ", "")
         headers1={"Authorization": "Bearer " + self._token}
-        self.setDisabled(1)
-        #TODO: Fix checkConnection
-#        if not checkConnection(self._config["Host"]):
-#            self.setDisabled(0)
-#            self._labelPickedDate.setText("Server is unreachable")
-#            qDebug(self._config["Host"])
-#            return
-        response = requests.get(url=url1, headers=headers1)
-        self.setDisabled(0)
-        if response.status_code != 200:
+        self._buttonPredict.setDisabled(1)
+
+        response = safeRequest("GET", url=url1, headers=headers1)
+        if response == None:
+            self._labelPickedDate.setText("Server is unreachable")
+            self._buttonPredict.setDisabled(0)
+            return
+
+        if response.status_code == 401:
             self._labelPickedDate.setText("Unauthorized")
+            self._buttonPredict.setDisabled(0)
             return
 
         #some vizualization stuff
         self._labelPickedDate.setText(response.json()["Data"])
 
+        self._buttonPredict.setDisabled(0)
 
-def checkConnection(url="localhost", timeout=3):
-    connection = http.client.HTTPConnection(url, timeout=timeout)
+
+def safeRequest(method, url, headers):
     try:
-        connection.request("HEAD", "/")
-        connection.close()
-        return True
-    except Exception as exep:
-        return False
+        response = requests.request(url=url, method=method, headers=headers)
+        return response
+    except Exception as e:
+        return None
 
