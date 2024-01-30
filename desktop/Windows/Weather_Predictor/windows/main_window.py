@@ -1,4 +1,3 @@
-#from PySide6.QtCore import qDebug
 from PySide6 import QtWidgets
 from PySide6 import QtCore
 import pyqtgraph as pg
@@ -7,6 +6,7 @@ import requests
 import os
 import shutil
 import json
+import numpy as np
 
 
 #class Widget(QWidget):
@@ -48,6 +48,8 @@ class Main_window(QtWidgets.QWidget):
         self._buttonSettings = QtWidgets.QPushButton()
 
         self._buttonArrowLeft = QtWidgets.QPushButton()
+        pen = pg.mkPen(color=("#356ACE"),width=40)
+        self._scatter = pg.ScatterPlotItem(pen=pen, symbol="o", symbolSize=20, symbolBrush="b")
         self._plot_graph = pg.PlotWidget()
         self._buttonArrowRight = QtWidgets.QPushButton()
 
@@ -131,6 +133,22 @@ class Main_window(QtWidgets.QWidget):
         self._config = json.load(open("configs\dev.json"))
 
         self._buttonPredict.clicked.connect(self.slotPredictButtonClicked)
+        self._scatter.sigClicked.connect(self.slotPlotPointClicked)
+
+
+        self._time = [0,400, 800, 1200, 1600, 2000]
+        self._timeStr = ["00:00","04:00", "08:00", "12:00", "16:00", "20:00"]
+        self._weatherDialog = QtWidgets.QDialog(self)
+        self._weatherDialog.setLayout(QtWidgets.QVBoxLayout())
+        self._weatherDialog.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint)
+        self._weatherDialogButtonClose = QtWidgets.QPushButton("Close")
+        self._weatherDialogButtonClose.clicked.connect(self.slotWeatherDialogCloseButtonClicked)
+# example of adding points
+        self._temperature  = [-1, 0, 1, 3, 5, 3]
+        self._scatter.addPoints(self._time, self._temperature)
+        self._plot_graph.addItem(self._scatter)
+#
+        self._posPlotClicked = (0,0)
 
 
 
@@ -195,6 +213,32 @@ class Main_window(QtWidgets.QWidget):
         self._labelPickedDate.setText(response.json()["Data"])
 
         self._buttonPredict.setDisabled(0)
+
+    def slotPlotPointClicked(self, points, point):
+        item = point.item()
+        index = np.where(self._scatter.points() == item)[0][0]
+        self.showWeatherDataDialog(self._timeStr[index], str(self._temperature[index]))
+
+    def slotPlotClicked(self, ev):
+        print(ev)
+        self._posPlotClicked = ev.pos()
+
+    def showWeatherDataDialog(self, time, tempreature):
+        vbl = QtWidgets.QVBoxLayout(self._weatherDialog)
+        vbl.addWidget(QtWidgets.QLabel("Time: " + time))
+        vbl.addWidget(QtWidgets.QLabel("Tempreature: " + tempreature))
+        vbl.addWidget(self._weatherDialogButtonClose)
+
+        QtWidgets.QWidget().setLayout(self._weatherDialog.layout())
+        self._weatherDialog.setLayout(vbl)
+
+        #print(pos.x())
+        pos = QtGui.QCursor.pos()
+        self._weatherDialog.setGeometry(pos.x(), pos.y(), self._weatherDialog.width(), self._weatherDialog.height())
+        self._weatherDialog.show()
+
+    def slotWeatherDialogCloseButtonClicked(self):
+        self._weatherDialog.close()
 
 
 def safeRequest(method, url, headers):
