@@ -48,8 +48,8 @@ class Main_window(QtWidgets.QWidget):
         self._buttonSettings = QtWidgets.QPushButton()
 
         self._buttonArrowLeft = QtWidgets.QPushButton()
-        pen = pg.mkPen(color=("#356ACE"),width=40)
-        self._scatter = pg.ScatterPlotItem(pen=pen, symbol="o", symbolSize=20, symbolBrush="b")
+        pen = pg.mkPen(color=("#356ACE"),width=14)
+        self._scatter = pg.ScatterPlotItem(pen=pen, symbol="o", symbolSize=20)
         self._plot_graph = pg.PlotWidget()
         self._buttonArrowRight = QtWidgets.QPushButton()
 
@@ -130,25 +130,76 @@ class Main_window(QtWidgets.QWidget):
         self.setObjectName("main_window")
         self.setWindowTitle("Weather Predictor")
 
+        dateSet = QtCore.QDate.currentDate()
+        self._dateEdit1.setMaximumDate(dateSet)
+        self._dateEdit2.setMinimumDate(dateSet)
+        dateSet = dateSet.addDays(-3)
+        self._dateEdit1.setMinimumDate(dateSet)
+        dateSet = dateSet.addDays(6)
+        self._dateEdit2.setMaximumDate(dateSet)
+
+        #self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint)
+
         self._config = json.load(open("configs\dev.json"))
+
+# setup country
+        self._countryChooseDialog = QtWidgets.QDialog(self)
+
+        self._countryChooseDialog.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint)
+
+        self._countryList = QtWidgets.QListWidget()
+        self.setupCountryList()
+        countryChooseCloseButton = QtWidgets.QPushButton("close")
+
+        vbl1 = QtWidgets.QVBoxLayout()
+        vbl1.addWidget(self._countryList)
+        vbl1.addWidget(countryChooseCloseButton)
+
+        self._countryChooseDialog.setLayout(vbl1)
+# end of setup
 
         self._buttonPredict.clicked.connect(self.slotPredictButtonClicked)
         self._scatter.sigClicked.connect(self.slotPlotPointClicked)
+        self._buttonCountry.clicked.connect(self.slotCountryButtonClicked)
+        #self.mouseMoveEvent(self.slotMouseMoveEvent)
+        countryChooseCloseButton.clicked.connect(self._countryChooseDialog.close)
+        self._countryList.itemClicked.connect(self.slotCountryListItemClicked)
+        self._plot_graph.plot(pen=pen)
+        ###self._plot_graph.sigMouseReleased.connect(self.slotWeatherDialogCloseButtonClicked)
 
 
-        self._time = [0,400, 800, 1200, 1600, 2000]
-        self._timeStr = ["00:00","04:00", "08:00", "12:00", "16:00", "20:00"]
+#        self._time = [0,400, 800, 1200, 1600, 2000]
+#        self._timeStr = ["00:00","04:00", "08:00", "12:00", "16:00", "20:00"]
+        self._time = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100,2200, 2300]
+        self._timeStr = ["00:00", "01:00","02:00","03:00","04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"]
+
         self._weatherDialog = QtWidgets.QDialog(self)
-        self._weatherDialog.setLayout(QtWidgets.QVBoxLayout())
-        self._weatherDialog.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint)
+        self._weatherDialogLabelTime = QtWidgets.QLabel()
+        self._weatherDialogLabelTempreature = QtWidgets.QLabel()
         self._weatherDialogButtonClose = QtWidgets.QPushButton("Close")
-        self._weatherDialogButtonClose.clicked.connect(self.slotWeatherDialogCloseButtonClicked)
+        vbl2 = QtWidgets.QVBoxLayout(self._weatherDialog)
+        vbl2.addWidget(self._weatherDialogLabelTime)#("Time: " + time)
+        vbl2.addWidget(self._weatherDialogLabelTempreature)#("Tempreature: " + tempreature)
+        vbl2.addWidget(self._weatherDialogButtonClose)
+        self._weatherDialog.setLayout(vbl2)
+        self._weatherDialog.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint)
+
+        self._weatherDialogButtonClose.clicked.connect(self._weatherDialog.close)
+
+        self._temperature = []
+        self._windSpeed = []
+        self._humidity = []
+        self._pressure  = []
+        self._weatherCategory  = []
+
+        self._maxTemperature = 0.0
+        self._minTemperature = 0.0
+
 # example of adding points
-        self._temperature  = [-1, 0, 1, 3, 5, 3]
-        self._scatter.addPoints(self._time, self._temperature)
-        self._plot_graph.addItem(self._scatter)
+#        self._temperature  = [-1, 0, 1, 3, 5, 3, 4, 8, 3, 5, 2, 5, 1, 6, 7, 3, 5, 2, 5, 2, 5, 3, 5, 1]
+#        self._scatter.addPoints(self._time, self._temperature)
+#        self._plot_graph.addItem(self._scatter)
 #
-        self._posPlotClicked = (0,0)
 
 
 
@@ -209,6 +260,8 @@ class Main_window(QtWidgets.QWidget):
             self._buttonPredict.setDisabled(0)
             return
 
+
+
         #some vizualization stuff
         self._labelPickedDate.setText(response.json()["Data"])
 
@@ -219,26 +272,37 @@ class Main_window(QtWidgets.QWidget):
         index = np.where(self._scatter.points() == item)[0][0]
         self.showWeatherDataDialog(self._timeStr[index], str(self._temperature[index]))
 
-    def slotPlotClicked(self, ev):
-        print(ev)
-        self._posPlotClicked = ev.pos()
-
     def showWeatherDataDialog(self, time, tempreature):
-        vbl = QtWidgets.QVBoxLayout(self._weatherDialog)
-        vbl.addWidget(QtWidgets.QLabel("Time: " + time))
-        vbl.addWidget(QtWidgets.QLabel("Tempreature: " + tempreature))
-        vbl.addWidget(self._weatherDialogButtonClose)
+        self._weatherDialogLabelTime.setText("Time: " + time)
+        self._weatherDialogLabelTempreature.setText("Tempreature: " + tempreature)
 
-        QtWidgets.QWidget().setLayout(self._weatherDialog.layout())
-        self._weatherDialog.setLayout(vbl)
-
-        #print(pos.x())
         pos = QtGui.QCursor.pos()
         self._weatherDialog.setGeometry(pos.x(), pos.y(), self._weatherDialog.width(), self._weatherDialog.height())
         self._weatherDialog.show()
 
-    def slotWeatherDialogCloseButtonClicked(self):
-        self._weatherDialog.close()
+#    def slotWeatherDialogCloseButtonClicked(self):
+#        self._weatherDialog.close()
+    def slotCountryButtonClicked(self):
+        self._countryChooseDialog.setGeometry(
+        self.x()+self._buttonCountry.x(),
+        self.y()+ self._buttonCountry.y()+self._buttonCountry.height()+30,
+        self.height()*0.4/2,
+        self.height()*0.4)
+        self._countryChooseDialog.show()
+    def slotCountryListItemClicked(self, ev):
+        self._country = ev.text()
+        pm1 = QtGui.QPixmap("icons/"+ev.text()+".png")
+        self._buttonCountry.setIcon(QtGui.QIcon(pm1))
+        self._countryChooseDialog.close()
+
+    def setupCountryList(self):
+        self._countryList.addItem("Ukraine")
+        self._countryList.addItem("USA")
+
+#    def mouseMoveEvent(self, ev):
+#        if ev.buttons() == QtCore.Qt.MouseButton.LeftButton:
+#            print(ev)
+#        super().mouseMoveEvent(ev)
 
 
 def safeRequest(method, url, headers):
