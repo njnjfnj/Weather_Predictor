@@ -1,1 +1,1 @@
-__all__ = ['transform', 'weather_api', 'load']
+__all__ = ['transform', 'weather_api', 'load', 'model_training']
