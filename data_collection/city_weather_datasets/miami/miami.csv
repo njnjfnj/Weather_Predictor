@@ -1,4 +1,0 @@
-timestamp,temp,feels_like,pressure,humidity,temp_min,temp_max,wind_speed,wind_deg,clouds_coverage,weather_category,weather_description
-1675288800,299.68,299.68,1021,74,298.7,301.49,4.12,140,20,Clouds,Clouds
-1675317600,295.79,296.38,1023,87,292.59,297.16,1.54,100,20,Clouds,Clouds
-1675346400,297.75,298.54,1023,87,295.37,299.81,2.57,130,40,Clouds,Clouds
