@@ -56,3 +56,5 @@ compile_commands.json
 # Python virtualenv 
 data_collection/virt/*
 data_collection/.env
+__pycache__/*
+*.pyc
