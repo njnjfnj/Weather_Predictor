@@ -52,3 +52,12 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+
+# Python virtualenv 
+data_collection/virt/*
+data_collection/.env
+__pycache__/*
+*.pyc
+.ipynb_checkpoints/*
+data_collection/city_weather_datasets/**
+
