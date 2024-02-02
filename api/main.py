@@ -21,11 +21,13 @@ def Auth():
 @app.route("/Predict/<id>")
 @token_auth.login_required
 def Predict(id):
+    print(flask.request.get_json()["dates"])
+    
     #predicting weather
     return flask.jsonify({
         "Status":"OK",
         "Data": id
-        })  
+        })
 
 
 @token_auth.verify_token
