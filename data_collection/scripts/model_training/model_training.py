@@ -5,8 +5,9 @@ from .pressure.pressure import create_pressure_model
 from .temp.temp import create_temp_min_model
 from .temp.temp import create_temp_max_model
 from .temp.temp import create_temp_model
+from .weather_category.weather_category import create_weather_category_model
 
-PRODUCTS = ['humidity', 'pressure', 'temp', 'temp_min', 'temp_max', 'wind_speed']
+PRODUCTS = ['humidity', 'pressure', 'temp', 'temp_min', 'temp_max', 'wind_speed', 'weather_category']
 
 def create_products_models(city_name, test_size):
     df = pd.read_csv(f'city_weather_datasets/{city_name}/{city_name}.csv')
@@ -19,18 +20,20 @@ def create_products_models(city_name, test_size):
         filename = f'city_weather_models/{city_name}/{product}.pkl'
 
         match product:
-            case 'humidity':
-                create_humidity_model(df, test_size, filename)
-            case 'wind_speed':
-                create_wind_speed_model(df, test_size, filename)
-            case 'pressure':
-                create_pressure_model(df, test_size, filename)
-            case 'temp_min':
-                create_temp_min_model(df, test_size, filename)
-            case 'temp_max':
-                create_temp_max_model(df, test_size, filename)
-            case 'temp':
-                create_temp_model(df, test_size, filename)
+            # case 'humidity':
+            #     create_humidity_model(df, test_size, filename)
+            # case 'wind_speed':
+            #     create_wind_speed_model(df, test_size, filename)
+            # case 'pressure':
+            #     create_pressure_model(df, test_size, filename)
+            # case 'temp_min':
+            #     create_temp_min_model(df, test_size, filename)
+            # case 'temp_max':
+            #     create_temp_max_model(df, test_size, filename)
+            # case 'temp':
+            #     create_temp_model(df, test_size, filename) 
+            case 'weather_category':
+                create_weather_category_model(df, filename)
         
         df = df.rename(columns={'timestamp': 'ds', 'y': product})
 
