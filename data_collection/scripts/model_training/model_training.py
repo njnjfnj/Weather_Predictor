@@ -24,6 +24,9 @@ def create_products_models(city_name, test_size):
 
         filename = f'{CITIES_WEATHER_MODELS_DIR}/{city_name}/{product}.json'
 
+        if product == 'weather_category':
+            filename = f'{CITIES_WEATHER_MODELS_DIR}/{city_name}/{product}.pkl'
+
         match product:
             case 'humidity':
                 create_humidity_model(df, test_size, filename)
