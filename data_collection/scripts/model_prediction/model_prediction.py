@@ -24,17 +24,26 @@ def predict_city_weather(city_name, time_period_hours):
                 if param != 'weather_category':
                     future = m.make_future_dataframe(periods=time_period_hours, freq='h')
                     forecast = m.predict(future)
-                    print(forecast)
+
                     forecast = pd.DataFrame(data=forecast)
+
                     forecast = forecast[['ds', 'yhat']].rename(columns={'yhat': param, 'ds': 'timestamp'})
+
                     forecast['timestamp'] = pd.to_datetime(forecast['timestamp'])
+
                     forecast.set_index('timestamp')
-                    print(forecast)
+                    
                     if not isinstance(result, pd.DataFrame):
                         result = forecast
                     else:
                         result = pd.merge(result, forecast, on='timestamp', how='left')
+                else:
+                    if isinstance(result, pd.DataFrame):
+                        weather_category = m.predict(result[TARGET_PARAMETERS[:-1]])
+                        result['weather_category'] = weather_category
+                
                 print(result)
+            
             except AttributeError as e:
                 print(e)
 
