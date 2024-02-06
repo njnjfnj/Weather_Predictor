@@ -6,5 +6,5 @@ with open('.env', 'a') as env:
 from scripts.model_training.model_training import create_products_models
 from scripts.model_prediction.model_prediction import predict_city_weather
 
-# create_products_models('miami', 240)
+create_products_models('miami', 240)
 predict_city_weather('miami', 240)
