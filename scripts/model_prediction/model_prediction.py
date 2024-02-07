@@ -45,7 +45,8 @@ def predict_city_weather(city_name, time_period_hours):
             except AttributeError as e:
                 return e
         
-        return result
+        return result.to_csv(sep=',')
+    else: return ""
 
 
 

@@ -60,5 +60,5 @@ __pycache__/*
 *.pyc
 .ipynb_checkpoints/*
 virt/*
-jjkaksjidka
+api/virt/*
 

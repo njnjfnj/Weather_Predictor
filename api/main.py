@@ -1,42 +1,9 @@
-#
-# to run use command: flask run -h 0.0.0.0 -p port
-#
-
 import flask
-from flask_httpauth import HTTPTokenAuth
+from ..scripts.model_prediction.model_prediction import predict_city_weather
 
 app = flask.Flask(__name__)
 
-with open('tokens.tok', 'r') as file:
-    allowed_tokens_str = file.read()
-allowed_tokens = allowed_tokens_str.split('\n')
+@app.route("/predict/<city_name>/<prediction_hours>")
+def predict_weather(city_name, prediction_hours):
+    return predict_city_weather(city_name=city_name, prediction_hours=prediction_hours)
 
-token_auth = HTTPTokenAuth(scheme="Bearer")
-
-@app.route("/Auth")
-@token_auth.login_required
-def Auth():
-    return flask.jsonify({"Status":"OK"})
-
-@app.route("/Predict/<id>")
-@token_auth.login_required
-def Predict(id):
-    #predicting weather
-    return flask.jsonify({
-        "Status":"OK",
-        "Data": id
-        })  
-
-
-@token_auth.verify_token
-def verify_token(token):
-    if token not in allowed_tokens:
-        return None
-    return True
-
-
-
-
-# for some reason it does not work
-# if __name__ == '__main__':
-#     app.run(host="0.0.0.0", port=8642, debug=True)
