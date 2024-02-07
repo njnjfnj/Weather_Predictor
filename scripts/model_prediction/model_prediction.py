@@ -4,7 +4,7 @@ from os import path
 from csv import reader
 from dotenv import load_dotenv, dotenv_values
 from sklearn.tree import DecisionTreeClassifier
-from ..model_training.utils.utils import load_model, load_sklearn_model
+from model_training.utils.utils import load_model, load_sklearn_model
 
 load_dotenv()
 
