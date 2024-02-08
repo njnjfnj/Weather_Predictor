@@ -5,7 +5,7 @@ from dotenv import load_dotenv, dotenv_values
 from datetime import date, datetime, timedelta
 from time import sleep, mktime
 
-from transform.transform import transform_weather_json
+from ..transform.transform import transform_weather_json
 
 
 def update_city_info(start_date, end_date, city_row, cities_columns, city_data_dir, city_weather_columns):        

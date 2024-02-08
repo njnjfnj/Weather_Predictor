@@ -9,8 +9,10 @@ from .temp.temp import create_temp_model
 from .weather_category.weather_category import create_weather_category_model
 
 load_dotenv()
-CITIES_WEATHER_DATA_DIR = dotenv_values()['CITIES_WEATHER_DATA_DIR']
-CITIES_WEATHER_MODELS_DIR = dotenv_values()['CITIES_WEATHER_MODELS_DIR']
+# CITIES_WEATHER_DATA_DIR = dotenv_values()['CITIES_WEATHER_DATA_DIR']
+CITIES_WEATHER_DATA_DIR = '../../data/datasets/'
+# CITIES_WEATHER_MODELS_DIR = dotenv_values()['CITIES_WEATHER_MODELS_DIR']
+CITIES_WEATHER_MODELS_DIR = '../../data/datasets'
 
 PRODUCTS = ['humidity', 'pressure', 'temp', 'temp_min', 'temp_max', 'wind_speed', 'weather_category']
 

@@ -1,19 +1,18 @@
 import pandas as pd 
-import pickle
 from os import path
 from csv import reader
 from dotenv import load_dotenv, dotenv_values
 from sklearn.tree import DecisionTreeClassifier
-from model_training.utils.utils import load_model, load_sklearn_model
-
+from ..model_training.utils.utils import load_model, load_sklearn_model
 load_dotenv()
 
 
 TARGET_PARAMETERS = ['temp', 'humidity', 'wind_speed', 'pressure', 'temp_min', 'temp_max', 'weather_category']
-CITIES_WEATHER_MODELS_DIR = dotenv_values()['CITIES_WEATHER_MODELS_DIR']
-ROOT_DIR = dotenv_values()['ROOT_DIR']
+# CITIES_WEATHER_MODELS_DIR = dotenv_values()['CITIES_WEATHER_MODELS_DIR']
+# ROOT_DIR = dotenv_values()['ROOT_DIR']
 
 def predict_city_weather(city_name, time_period_hours):
+    time_period_hours = int(time_period_hours)
     checked_city = check_city_name(city_name)
     if checked_city:
         result = False
@@ -52,7 +51,7 @@ def predict_city_weather(city_name, time_period_hours):
 
 
 def check_city_name(city_name):
-    cities_path = path.join(ROOT_DIR, dotenv_values()['CITIES_DIR'])
+    cities_path = path.join(path.dirname(path.realpath(__file__)), '../../data/cities/cities.csv')
     if path.isfile(cities_path):
         with open(cities_path, 'r') as cities_csv:
             cities = list(reader(cities_csv))
@@ -65,7 +64,7 @@ def check_city_name(city_name):
 def open_weather_models(city_name):
     res = {}
     for param in TARGET_PARAMETERS:
-        filepath = path.join(ROOT_DIR, CITIES_WEATHER_MODELS_DIR, city_name, param)
+        filepath = path.join(path.dirname(path.realpath(__file__)), '../../data/models/', city_name, param)
         if param == 'weather_category':
             filepath += '.pkl'
         else:
