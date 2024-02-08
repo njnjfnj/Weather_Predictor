@@ -1,0 +1,14 @@
+version: "1.0"
+
+services:
+  prediction_api:
+    container_name: prediction_api
+    image: weather_predictor_api:1.0
+    build: .
+    ports:
+     - 4000:4000
+    volumes:
+     - weather_data_volume:/weather/data
+
+volumes:
+  weather_data_volume:
