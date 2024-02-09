@@ -5,6 +5,10 @@ services:
     container_name: prediction_api
     image: weather_predictor_api:1.0
     build: .
+    environment:
+     - FLASK_ENV=development
+     - PYTHONUNBUFFERED=True
+    restart: on-failure  
     ports:
      - 4000:4000
     volumes:
