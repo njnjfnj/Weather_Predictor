@@ -61,3 +61,8 @@ __pycache__/*
 .ipynb_checkpoints/*
 data_collection/city_weather_datasets/**
 
+# Frontend
+client/node_modules/
+client/.cache/
+client/public
+client/src/gatsby-types.d.ts
