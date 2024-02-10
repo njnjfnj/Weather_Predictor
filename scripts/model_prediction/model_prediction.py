@@ -11,17 +11,20 @@ TARGET_PARAMETERS = ['temp', 'humidity', 'wind_speed', 'pressure', 'temp_min', '
 # CITIES_WEATHER_MODELS_DIR = dotenv_values()['CITIES_WEATHER_MODELS_DIR']
 # ROOT_DIR = dotenv_values()['ROOT_DIR']
 
-def predict_city_weather(city_name, time_period_hours):
-    time_period_hours = int(time_period_hours)
+
+def predict_city_weather(city_name, prediction_hours):
     checked_city = check_city_name(city_name)
     if checked_city:
         result = False
-        models = open_weather_models(city_name)
+        models_and_time_diff = open_weather_models(city_name, prediction_hours)
+        models = models_and_time_diff['models']
+        new_prediction_hours = models_and_time_diff['prediction_hours']
+        
         for param in TARGET_PARAMETERS:
             m = models[param]
             try:
                 if param != 'weather_category':
-                    future = m.make_future_dataframe(periods=time_period_hours, freq='h')
+                    future = m.make_future_dataframe(periods=new_prediction_hours, freq='h')
                     forecast = m.predict(future)
 
                     forecast = pd.DataFrame(data=forecast)
@@ -44,7 +47,7 @@ def predict_city_weather(city_name, time_period_hours):
             except AttributeError as e:
                 return e
         
-        return result.to_csv(sep=',')
+        print(result[-prediction_hours:].to_csv(sep=','))
     else: return ""
 
 
@@ -61,8 +64,12 @@ def check_city_name(city_name):
                     return True
     return False
 
-def open_weather_models(city_name):
+from time import mktime, time
+
+
+def open_weather_models(city_name, prediction_hours):
     res = {}
+    model_last_index = None
     for param in TARGET_PARAMETERS:
         filepath = path.join(path.dirname(path.realpath(__file__)), '../../data/models/', city_name, param)
         if param == 'weather_category':
@@ -75,4 +82,31 @@ def open_weather_models(city_name):
                 res[param] = load_sklearn_model(filepath)
             else:
                 res[param] = load_model(filepath)
-    return res
+                model_last_index = res[param].history.tail(1)['ds'].iloc[0]
+    print(model_last_index)
+    prediction_hours = match_time_difference(city_name=city_name, 
+                                             prediction_hours=prediction_hours, 
+                                             model_last_index=model_last_index)
+    return {'models': res, 'prediction_hours': prediction_hours}
+
+import csv
+from datetime import datetime, timezone
+from math import ceil
+
+def match_time_difference(city_name, prediction_hours, model_last_index):
+    CITIES_DIR = "data/cities/cities.csv"
+    
+    with open(CITIES_DIR, 'r') as cities_csv:
+        cities = list(csv.reader(cities_csv))
+        name_index = cities[0].index('name')
+        time_difference_index = cities[0].index('time_difference')
+        curr_city_time = datetime.utcnow()
+        for row in cities:
+            if city_name == row[name_index].lower():
+                print("sa")
+                time_difference = row[time_difference_index][0]
+                if row[time_difference_index][0] == '-':
+                    time_difference = int(time_difference[1:]) * -1
+                else: time_difference = int(time_difference)
+
+                return (int(ceil(((curr_city_time - model_last_index).total_seconds() / 3600))) + time_difference)
