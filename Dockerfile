@@ -7,6 +7,7 @@ RUN mkdir api && mkdir scripts
 COPY api ./api/
 COPY scripts ./scripts/
 COPY data ./data/
+COPY redis ./redis/
 COPY __init__.py ./__init__.py
 
 COPY requirements.txt requirements.txt
