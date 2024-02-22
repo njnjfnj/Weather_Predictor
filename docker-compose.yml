@@ -1,9 +1,9 @@
-version: "1.0"
+version: "1.1"
 
 services:
   prediction_api:
     container_name: prediction_api
-    image: weather_predictor_api:1.0
+    image: weather_predictor_api:1.1
     build: .
     environment:
      - FLASK_ENV=development
