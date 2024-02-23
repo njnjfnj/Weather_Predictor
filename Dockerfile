@@ -16,5 +16,5 @@ RUN pip install -r requirements.txt
 ENV FLASK_APP=./api/app.py
 EXPOSE 4000
 
-CMD ["flask", "run", "--host=0.0.0.0", "--port=4000", "--debug"]
+CMD ["sh", "-c", "cd /weather/redis/ && python3 seed.py && cd /weather/ && flask run --host=0.0.0.0 --port=4000 --debug"]
 
