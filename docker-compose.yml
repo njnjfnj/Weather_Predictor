@@ -1,0 +1,30 @@
+version: "1.4"
+
+services:
+  prediction_api:
+    container_name: prediction_api
+    image: weather_predictor_api:1.4
+    build: .
+    environment:
+     - FLASK_ENV=development
+     - PYTHONUNBUFFERED=True
+    restart: on-failure  
+    ports:
+     - 4000:4000
+    volumes:
+     - weather_data_volume:/weather/data
+    depends_on: 
+     - redis
+
+  redis:
+    container_name: redis 
+    image: redis:latest
+    ports:
+     - 6379:6379
+    restart: on-failure  
+    volumes:
+          - redis-data:/data
+
+volumes:
+  weather_data_volume:
+  redis-data:
