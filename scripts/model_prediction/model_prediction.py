@@ -56,15 +56,15 @@ def predict_city_weather(city_name, prediction_hours):
             row["timestamp"] = row["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
         json_objects = [dumps(row) for row in data_list]
         
-        return {"result": json_objects}
-    else: return "Error occured: weather prediction failed"
-
+        return {"result": json_objects, "status": "success"}
+    else: return {"result": [], "status": "error"
+}
 
 
 
 def check_city_name(city_name):
     match = get_city(city_name)
-    match = loads(match)["match"][0][0]
+    match = loads(match)["result"][0][0]
     if match:
         if match.lower() == city_name.lower(): 
             return True
@@ -101,7 +101,7 @@ from math import ceil
 
 def match_time_difference(city_name, prediction_hours, model_last_index):
     match = get_city(city_name)
-    match = loads(match)["match"][0]
+    match = loads(match)["result"][0]
     time_difference = match[-1]
     curr_city_time = datetime.utcnow()
 
