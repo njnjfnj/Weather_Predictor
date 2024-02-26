@@ -4,21 +4,23 @@ from csv import reader
 from dotenv import load_dotenv, dotenv_values
 from sklearn.tree import DecisionTreeClassifier
 from ..model_training.utils.utils import load_model, load_sklearn_model
+from json import loads
+from ...redis_scripts.get import get_city
+
 load_dotenv()
 
 
 TARGET_PARAMETERS = ['temp', 'humidity', 'wind_speed', 'pressure', 'temp_min', 'temp_max', 'weather_category']
-# CITIES_WEATHER_MODELS_DIR = dotenv_values()['CITIES_WEATHER_MODELS_DIR']
-# ROOT_DIR = dotenv_values()['ROOT_DIR']
-
 
 def predict_city_weather(city_name, prediction_hours):
+    city_name = city_name.lower()
+    print(city_name)
     checked_city = check_city_name(city_name)
     if checked_city:
         result = False
         models_and_time_diff = open_weather_models(city_name, prediction_hours)
         models = models_and_time_diff['models']
-        new_prediction_hours = models_and_time_diff['prediction_hours']
+        new_prediction_hours = int(models_and_time_diff['prediction_hours'])
         
         for param in TARGET_PARAMETERS:
             m = models[param]
@@ -47,21 +49,18 @@ def predict_city_weather(city_name, prediction_hours):
             except AttributeError as e:
                 return e
         
-        print(result[-prediction_hours:].to_csv(sep=','))
-    else: return ""
+        return result[-new_prediction_hours:].to_json()
+    else: return "Error occured: weather prediction failed"
 
 
 
 
 def check_city_name(city_name):
-    cities_path = path.join(path.dirname(path.realpath(__file__)), '../../data/cities/cities.csv')
-    if path.isfile(cities_path):
-        with open(cities_path, 'r') as cities_csv:
-            cities = list(reader(cities_csv))
-            name_index = cities[0].index('name')
-            for i in range(1, len(cities)):
-                if str(cities[i][name_index]).lower() == city_name:
-                    return True
+    match = get_city(city_name)
+    match = loads(match)["match"][0][0]
+    if match:
+        if match.lower() == city_name.lower(): 
+            return True
     return False
 
 from time import mktime, time
@@ -94,19 +93,14 @@ from datetime import datetime, timezone
 from math import ceil
 
 def match_time_difference(city_name, prediction_hours, model_last_index):
-    CITIES_DIR = "data/cities/cities.csv"
-    
-    with open(CITIES_DIR, 'r') as cities_csv:
-        cities = list(csv.reader(cities_csv))
-        name_index = cities[0].index('name')
-        time_difference_index = cities[0].index('time_difference')
-        curr_city_time = datetime.utcnow()
-        for row in cities:
-            if city_name == row[name_index].lower():
-                print("sa")
-                time_difference = row[time_difference_index][0]
-                if row[time_difference_index][0] == '-':
-                    time_difference = int(time_difference[1:]) * -1
-                else: time_difference = int(time_difference)
+    match = get_city(city_name)
+    match = loads(match)["match"][0]
+    time_difference = match[-1]
+    curr_city_time = datetime.utcnow()
 
-                return (int(ceil(((curr_city_time - model_last_index).total_seconds() / 3600))) + time_difference)
+    if time_difference[0] == '-':
+        time_difference = int(time_difference[1:]) * -1
+    else: time_difference = int(time_difference)
+
+    return (int(ceil(((curr_city_time - model_last_index).total_seconds() / 3600))) + time_difference)
+
