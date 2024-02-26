@@ -4,10 +4,11 @@ from csv import reader
 from dotenv import load_dotenv, dotenv_values
 from sklearn.tree import DecisionTreeClassifier
 from ..model_training.utils.utils import load_model, load_sklearn_model
-from json import loads
+from json import loads, dumps
 from ...redis_scripts.get import get_city
 
 load_dotenv()
+
 
 
 TARGET_PARAMETERS = ['temp', 'humidity', 'wind_speed', 'pressure', 'temp_min', 'temp_max', 'weather_category']
@@ -48,8 +49,14 @@ def predict_city_weather(city_name, prediction_hours):
                         
             except AttributeError as e:
                 return e
+            
+        result["timestamp"] = pd.to_datetime(result["timestamp"], unit="s")
+        data_list = result[-int(prediction_hours):].to_dict(orient='records')
+        for row in data_list:
+            row["timestamp"] = row["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
+        json_objects = [dumps(row) for row in data_list]
         
-        return result[-new_prediction_hours:].to_json()
+        return {"result": json_objects}
     else: return "Error occured: weather prediction failed"
 
 
