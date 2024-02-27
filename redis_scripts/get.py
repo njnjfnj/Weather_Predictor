@@ -34,8 +34,9 @@ def get_city(city_name):
         for key, index in keys:
             arr = r.hmget(name=key, keys=tuple(hash_table_keys))
         
-            res.append([key.decode("UTF-8")])
-            res[-1] = res[-1] + [e.decode("UTF-8") for e in arr]
+            res.append({"name": key.decode("UTF-8")})
+            for i in range(len(hash_table_keys)):
+                res[-1][hash_table_keys[i]] = arr[i].decode("UTF-8")
         
         return construct_result(res)
 
