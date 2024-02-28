@@ -1,6 +1,6 @@
 import flask
 from json import loads
-from flask import make_response, jsonify
+from flask import make_response, jsonify, request
 from ..scripts.model_prediction.model_prediction import predict_city_weather
 from ..redis_scripts.get import get_city, get_all_cities
 app = flask.Flask(__name__)
@@ -29,7 +29,10 @@ def predict_weather(city_name, prediction_hours):
      
 @app.route("/cities/<city_name>")
 def get_city_info(city_name):
-    city_data = loads(get_city(city_name))
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 6))
+    print(city_name, page, limit)
+    city_data = loads(get_city(city_name, page, limit))
     headers = {
         'Content-Type': 'application/json'
     }
@@ -38,7 +41,10 @@ def get_city_info(city_name):
 
 @app.route("/cities/")
 def get_cities_info():
-    cities_data = loads(get_all_cities())
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 6))
+    print(page, limit)
+    cities_data = loads(get_all_cities(page=page, limit=limit))
     headers = {
         'Content-Type': 'application/json'
     }
