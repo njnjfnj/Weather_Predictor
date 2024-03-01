@@ -5,58 +5,49 @@ from dotenv import load_dotenv, dotenv_values
 from datetime import date, datetime, timedelta
 from time import sleep, mktime
 
-from ..transform.transform import transform_weather_json
+from transform.transform import transform_load_weather_json
 
+def load_api_key():
+    load_dotenv()
+    return dotenv_values()['API_KEY']
 
-def update_city_info(start_date, end_date, city_row, cities_columns, city_data_dir, city_weather_columns):        
+API_KEY = load_api_key()
+
+datetime_format = '%Y-%m-%d:%H'
+
+def update_city_info(start_date, end_date, city_row, cities_columns, city_data_dir):        
     name_index = cities_columns.index('name')
     lat_index = cities_columns.index('lat')
     lon_index = cities_columns.index('lon')
     
-    city_time_difference = cities_columns.index('time_difference')
-        
+    city_time_diff_index = cities_columns.index('time_difference')
+    city_time_diff = city_row[city_time_diff_index]
 
-    time_difference = None
+    # if city_time_diff[0] == "-":
+    #     city_time_diff = int(city_time_diff[1:])
+    #     start_date = start_date - timedelta(hours=city_time_diff)
+    #     end_date = end_date - timedelta(hours=city_time_diff)
+    # else: 
+    #     city_time_diff = int(city_time_diff)
+    #     start_date = start_date + timedelta(hours=city_time_diff)
+    #     end_date = end_date + timedelta(hours=city_time_diff)
     
-    while start_date <= end_date:
+    unix_start = mktime(start_date.timetuple())
+    unix_end = mktime(end_date.timetuple())
 
-        next_date = start_date + timedelta(hours=1) 
-        if not time_difference:
-            time_difference = int(city_row[city_time_difference][1:]) * -1 if city_row[city_time_difference][0] == '-' else int(city_row[city_time_difference])
-            start_date = start_date - timedelta(hours=time_difference)
-            next_date = start_date + timedelta(hours=1)
-        
-        url = f'https://history.openweathermap.org/data/2.5/history/city?lat={city_row[lat_index]}&lon={city_row[lon_index]}&type=hour&start={(mktime(start_date.timetuple()))}&end={(mktime(next_date.timetuple()))}&appid={API_KEY}'
+    while unix_start < unix_end:
+        next_date = start_date + timedelta(days=14)
+        url = f'https://api.weatherbit.io/v2.0/history/hourly?lat={city_row[lat_index]}&lon={city_row[lon_index]}&start_date={start_date.strftime("%Y-%m-%d:%H")}&end_date={next_date.strftime("%Y-%m-%d:%H")}&tz=utc&key={API_KEY}'
         
         start_date = next_date
+        unix_start = mktime(start_date.timetuple())
 
         res = requests.get(url=url).json()
-
-        print(res['list'][0]['dt'])
-
-        transofmed_weather = transform_weather_json(res)
-        arr = [transofmed_weather]
+        print(res)
+        # transform_load_weather_json(res, city_data_dir, city_row[name_index].lower())
         
-        if path.isdir(city_data_dir):
-            city_directory = path.join(city_data_dir, city_row[name_index].lower())
-            if not path.isdir(city_directory):
-                mkdir(city_directory)
-
-            filename = path.join(city_directory, city_row[name_index].lower() + '.csv')
-            existing_data = []
-            
-            try:
-                with open(filename, 'r') as city_file:
-                    reader = csv.reader(city_file)
-                    existing_data = list(reader)
-            except FileNotFoundError:
-                existing_data = []
-
-            if not existing_data or not existing_data[0] == city_weather_columns:
-                existing_data.insert(0, city_weather_columns)
-
-            existing_data.extend(arr)
-
-            with open(filename, 'w', newline='') as city_file:
-                writer = csv.writer(city_file)
-                writer.writerows(existing_data)
+        sleep(2)
+        
+    
+        
+        
