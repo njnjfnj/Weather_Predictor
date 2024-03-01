@@ -1,18 +1,40 @@
-def transform_weather_json(json_str):
-    info = json_str['list'][0]
-    timestamp = info['dt']
-    temp = float(info['main']['temp']) - 273.15 
-    feels_like = float(info['main']['feels_like']) - 273.15
-    pressure = info['main']['pressure']
-    humidity = info['main']['humidity']
-    temp_min = float(info['main']['temp_min']) - 273.15
-    temp_max = float(info['main']['temp_max']) - 273.15
-    wind_speed = info['wind']['speed'] * 3.6
-    wind_deg = info['wind']['deg']
-    clouds_coverage = info['clouds']['all']
-    weather_category = info['weather'][0]['main']
-    weather_description = info['weather'][0]['main']
+from csv import DictWriter,DictReader ,reader
+from json import loads
+from os import path, mkdir
 
-    arr = [timestamp, temp, feels_like, pressure, humidity, temp_min, temp_max, wind_speed, wind_deg, clouds_coverage, weather_category, weather_description]
+def transform_load_weather_json(dct, city_data_dir, city_name):
     
-    return arr
+    data_for_csv = []
+    for item in dct['data']:
+        item['weather_description'] = item['weather']['description']
+        del item['weather']
+        data_for_csv.append(item)
+
+    keys = list(data_for_csv[0].keys())
+
+    if path.isdir(city_data_dir):
+        city_directory = path.join(city_data_dir, city_name)
+        if not path.isdir(city_directory):
+            mkdir(city_directory)
+
+        filename = path.join(city_directory, city_name+ '.csv')
+        existing_data = {}
+        file_empty = False
+        try:
+            with open(filename, 'r') as city_file:
+                reader = DictReader(city_file)
+                file_empty = not bool(list(reader))
+                
+        except FileNotFoundError:
+            file_empty = False
+
+        if file_empty:
+            with open(filename, 'w') as output_file:
+                dict_writer = DictWriter(output_file, keys)
+                dict_writer.writeheader()
+                dict_writer.writerows(data_for_csv)
+        else:
+            with open(filename, 'a') as output_file:
+                dict_writer = DictWriter(output_file, keys)
+                dict_writer.writerows(data_for_csv)
+        
