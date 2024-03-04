@@ -11,8 +11,8 @@ cities_weather_data_dir = path.join(curdir, "../../data/datasets/")
 
 datetime_format = '%Y-%m-%d:%H'
 
-START_DATE = datetime.strptime('2017-05-20:00', datetime_format)
-END_DATE = datetime.strptime('2024-01-01:00', datetime_format) 
+START_DATE = datetime.strptime('2021-06-10:00', datetime_format)
+END_DATE = datetime.strptime('2024-03-01:00', datetime_format) 
 print(START_DATE, END_DATE)
 CITY_WEATHER_COLUMNS = ['timestamp','temp','feels_like','pressure','humidity','temp_min','temp_max','wind_speed','wind_deg','clouds_coverage', 'weather_category','weather_description']
 

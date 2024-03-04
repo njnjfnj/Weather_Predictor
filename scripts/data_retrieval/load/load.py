@@ -36,15 +36,14 @@ def update_city_info(start_date, end_date, city_row, cities_columns, city_data_d
     unix_end = mktime(end_date.timetuple())
 
     while unix_start < unix_end:
-        next_date = start_date + timedelta(days=14)
+        next_date = start_date + timedelta(days=13)
         url = f'https://api.weatherbit.io/v2.0/history/hourly?lat={city_row[lat_index]}&lon={city_row[lon_index]}&start_date={start_date.strftime("%Y-%m-%d:%H")}&end_date={next_date.strftime("%Y-%m-%d:%H")}&tz=utc&key={API_KEY}'
         
         start_date = next_date
         unix_start = mktime(start_date.timetuple())
 
         res = requests.get(url=url).json()
-        print(res)
-        # transform_load_weather_json(res, city_data_dir, city_row[name_index].lower())
+        transform_load_weather_json(res, city_data_dir, city_row[name_index].lower())
         
         sleep(2)
         
