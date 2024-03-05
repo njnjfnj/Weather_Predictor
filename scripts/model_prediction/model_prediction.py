@@ -13,17 +13,17 @@ load_dotenv()
 
 TARGET_PARAMETERS = ['temp', 'humidity', 'wind_speed', 'pressure', 'temp_min', 'temp_max', 'weather_category']
 
-def predict_city_weather(city_name, prediction_hours):
+def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGET_PARAMETERS):
     city_name = city_name.lower()
     print(city_name)
     checked_city = check_city_name(city_name)
     if checked_city:
         result = False
-        models_and_time_diff = open_weather_models(city_name, prediction_hours)
+        models_and_time_diff = open_weather_models(city_name, prediction_hours, target_params=target_params)
         models = models_and_time_diff['models']
         new_prediction_hours = int(models_and_time_diff['prediction_hours'])
         
-        for param in TARGET_PARAMETERS:
+        for param in target_params:
             m = models[param]
             try:
                 if param != 'weather_category':
@@ -44,7 +44,7 @@ def predict_city_weather(city_name, prediction_hours):
                         result = pd.merge(result, forecast, on='timestamp', how='left')
                 else:
                     if isinstance(result, pd.DataFrame):
-                        weather_category = m.predict(result[TARGET_PARAMETERS[:-1]])
+                        weather_category = m.predict(result[target_params[:-1]])
                         result['weather_category'] = weather_category
                         
             except AttributeError as e:
@@ -59,7 +59,11 @@ def predict_city_weather(city_name, prediction_hours):
         return {"result": json_objects, "status": "success"}
     else: return {"result": [], "status": "error"
 }
-
+    
+def predict_daily_city_weather(city_name, prediction_days):
+    hours = prediction_days * 24
+    return predict_hourly_city_weather(city_name, prediction_hours=hours, 
+                                       target_params=['temp_min', 'temp_max', 'weather_category'])
 
 
 def check_city_name(city_name):
@@ -73,10 +77,10 @@ def check_city_name(city_name):
 from time import mktime, time
 
 
-def open_weather_models(city_name, prediction_hours):
+def open_weather_models(city_name, prediction_hours, target_params=TARGET_PARAMETERS):
     res = {}
     model_last_index = None
-    for param in TARGET_PARAMETERS:
+    for param in target_params:
         filepath = path.join(path.dirname(path.realpath(__file__)), '../../data/models/', city_name, param)
         if param == 'weather_category':
             filepath += '.pkl'
