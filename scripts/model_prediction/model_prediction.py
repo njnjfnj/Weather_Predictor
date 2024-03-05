@@ -64,7 +64,7 @@ def predict_city_weather(city_name, prediction_hours):
 
 def check_city_name(city_name):
     match = get_city(city_name)
-    match = loads(match)["result"][0][0]
+    match = loads(match)["result"][0]["name"]
     if match:
         if match.lower() == city_name.lower(): 
             return True
@@ -102,7 +102,7 @@ from math import ceil
 def match_time_difference(city_name, prediction_hours, model_last_index):
     match = get_city(city_name)
     match = loads(match)["result"][0]
-    time_difference = match[-1]
+    time_difference = match["utc_time_difference"]
     curr_city_time = datetime.utcnow()
 
     if time_difference[0] == '-':
