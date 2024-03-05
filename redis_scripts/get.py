@@ -25,7 +25,7 @@ def construct_offsets(page, limit):
     return {"start": start, "end": end_non_inclusive}
 
 def get_city(city_name, page=0, limit=None):
-    offsets, start, end = {}, None, None
+    offsets, start, end = {}, 0, 0
     if limit and limit > 0:
         offsets = construct_offsets(page=page, limit=limit)
         start = int(offsets["start"])
@@ -41,13 +41,15 @@ def get_city(city_name, page=0, limit=None):
     prepared_name = prepared_name.strip() + "*"
     try:
         c, keys = list(r.zscan(name="city_names", cursor=0, match=prepared_name))
-
         if end >= len(keys):
+            print(1)
             if start >= len(keys):
                 total_pages = (len(keys) // limit) + (len(keys) % limit > 0)
                 return construct_result([], f"Invalid pagination parameters: requested page ({page}) exceeds available data (total pages: {total_pages})")
             keys =  keys[start:-1]
-        else: keys =  keys[start:end] 
+        elif (start != end):
+            print("2")
+            keys = keys[start:end] 
         
 
         for key, index in keys:
@@ -63,9 +65,11 @@ def get_city(city_name, page=0, limit=None):
         return construct_result(res, e)
     
 def get_all_cities(page, limit):
-    offsets = construct_offsets(page=page, limit=limit)
-    start = offsets["start"]
-    end = offsets["end"]
+    offsets, start, end = {}, 0, 0
+    if limit and limit > 0:
+        offsets = construct_offsets(page=page, limit=limit)
+        start = int(offsets["start"])
+        end = int(offsets["end"])
 
     r = connect_to_redis(host="redis", port="6379")
     res = []
@@ -76,7 +80,7 @@ def get_all_cities(page, limit):
                 total_pages = (len(keys) // limit) + (len(keys) % limit > 0)
                 return construct_result([], f"Invalid pagination parameters: requested page ({page}) exceeds available data (total pages: {total_pages})")
             keys =  keys[start:-1]
-        else: keys =  keys[start:end] 
+        elif (start != end): keys = keys[start:end] 
 
         for key, index in keys:
             arr = r.hmget(name=key, keys=tuple(hash_table_keys))
