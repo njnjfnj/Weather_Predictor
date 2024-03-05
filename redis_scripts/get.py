@@ -92,3 +92,30 @@ def get_all_cities(page, limit):
     
     except Exception as e:
         return construct_result(res, e)
+
+
+def construct_cities_count(amount, e=''):
+    if amount:
+        return dumps({"result": amount, "status": "success"})
+    else:
+        message = e if e != '' else "No matching cities found"
+        return dumps({"result": amount, "status": "error", "message": message})
+
+def get_number_of_cities(city_name):
+    r = connect_to_redis(host="redis", port="6379")
+    city_name = city_name.replace("_", " ")
+    splitted = city_name.split(" ")
+    prepared_name = ''
+    for e in splitted:
+        prepared_name += e.lower().capitalize() + " "
+    res = 0
+    prepared_name = prepared_name.strip() + "*"
+    try:
+        c, keys = list(r.zscan(name="city_names", cursor=0, match=prepared_name))
+        if len(keys) == 0:
+            c, keys = list(r.zscan(name="city_names", cursor=0, match=prepared_name[:-1]))
+        return construct_cities_count(len(keys))
+    except Exception as e:
+        return construct_cities_count(res, e)
+    
+
