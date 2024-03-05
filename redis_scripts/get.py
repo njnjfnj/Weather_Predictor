@@ -41,14 +41,14 @@ def get_city(city_name, page=0, limit=None):
     prepared_name = prepared_name.strip() + "*"
     try:
         c, keys = list(r.zscan(name="city_names", cursor=0, match=prepared_name))
+        if len(keys) == 0:
+            c, keys = list(r.zscan(name="city_names", cursor=0, match=prepared_name[:-1]))
         if end >= len(keys):
-            print(1)
             if start >= len(keys):
                 total_pages = (len(keys) // limit) + (len(keys) % limit > 0)
                 return construct_result([], f"Invalid pagination parameters: requested page ({page}) exceeds available data (total pages: {total_pages})")
-            keys =  keys[start:-1]
+            keys = keys[start:]
         elif (start != end):
-            print("2")
             keys = keys[start:end] 
         
 
