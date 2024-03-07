@@ -13,10 +13,17 @@ def update_city_info(start_date, end_date, city_row, cities_columns, city_data_d
     lat_index = cities_columns.index('lat')
     lon_index = cities_columns.index('lon')
     
-    city_time_difference = cities_columns.index('time_difference')
-        
+    city_time_diff_index = cities_columns.index('utc_time_difference')
+    city_time_diff = city_row[city_time_diff_index]
 
-    time_difference = None
+    # if city_time_diff[0] == "-":
+    #     city_time_diff = int(city_time_diff[1:])
+    #     start_date = start_date - timedelta(hours=city_time_diff)
+    #     end_date = end_date - timedelta(hours=city_time_diff)
+    # else: 
+    #     city_time_diff = int(city_time_diff)
+    #     start_date = start_date + timedelta(hours=city_time_diff)
+    #     end_date = end_date + timedelta(hours=city_time_diff)
     
     while start_date <= end_date:
 
@@ -31,11 +38,12 @@ def update_city_info(start_date, end_date, city_row, cities_columns, city_data_d
         start_date = next_date
 
         res = requests.get(url=url).json()
-
-        print(res['list'][0]['dt'])
-
-        transofmed_weather = transform_weather_json(res)
-        arr = [transofmed_weather]
+        transform_load_weather_json(res, city_data_dir, city_row[name_index].lower())
+        
+        sleep(1)
+        
+    
+        
         
         if path.isdir(city_data_dir):
             city_directory = path.join(city_data_dir, city_row[name_index].lower())
