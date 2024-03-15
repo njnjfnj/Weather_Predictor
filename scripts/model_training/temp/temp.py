@@ -1,9 +1,8 @@
 from prophet import Prophet
 from ..utils.utils import save_model
  
-def create_temp_model(df, test_size, model_filename):
-    train = df.iloc[:-test_size]
-    test = df.iloc[-test_size:]
+def create_temp_model(df, model_filename):
+
 
     model = Prophet(
     yearly_seasonality=False,  
@@ -16,7 +15,7 @@ def create_temp_model(df, test_size, model_filename):
     # model.add_regressor('temp_max')
     # model.add_regressor('pressure') 
 
-    model.fit(train)
+    model.fit(df)
 
     save_model(model, model_filename)
 
@@ -32,9 +31,8 @@ def create_temp_model(df, test_size, model_filename):
 
     # return forecast
 
-def create_temp_min_model(df, test_size, model_filename):
-    train = df.iloc[:-test_size]
-    test = df.iloc[-test_size:]
+def create_temp_min_model(df, model_filename):
+
 
     model = Prophet(
     yearly_seasonality=False,  
@@ -42,7 +40,7 @@ def create_temp_min_model(df, test_size, model_filename):
     )
     model.add_seasonality(name='monthly', period=30.5, fourier_order=5)  
 
-    model.fit(train)
+    model.fit(df)
 
     save_model(model, model_filename)
 
@@ -52,9 +50,8 @@ def create_temp_min_model(df, test_size, model_filename):
 
     # return forecast
 
-def create_temp_max_model(df, test_size, model_filename):
-    train = df.iloc[:-test_size]
-    test = df.iloc[-test_size:]
+def create_temp_max_model(df, model_filename):
+
 
     model = Prophet(
     yearly_seasonality=False,  
@@ -64,7 +61,7 @@ def create_temp_max_model(df, test_size, model_filename):
     model.add_seasonality(name='monthly', period=30.5, fourier_order=5)  
     # model.add_regressor('temp_min')
 
-    model.fit(train)
+    model.fit(df)
 
     save_model(model, model_filename)
 
