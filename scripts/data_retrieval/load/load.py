@@ -20,7 +20,7 @@ def update_city_info(start_date, end_date, city_row, cities_columns, city_data_d
     lat_index = cities_columns.index('lat')
     lon_index = cities_columns.index('lon')
     
-    city_time_diff_index = cities_columns.index('time_difference')
+    city_time_diff_index = cities_columns.index('utc_time_difference')
     city_time_diff = city_row[city_time_diff_index]
 
     # if city_time_diff[0] == "-":
@@ -45,7 +45,7 @@ def update_city_info(start_date, end_date, city_row, cities_columns, city_data_d
         res = requests.get(url=url).json()
         transform_load_weather_json(res, city_data_dir, city_row[name_index].lower())
         
-        sleep(2)
+        sleep(1)
         
     
         
