@@ -9,14 +9,12 @@ from .temp.temp import create_temp_model
 from .weather_category.weather_category import create_weather_category_model
 
 load_dotenv()
-# CITIES_WEATHER_DATA_DIR = dotenv_values()['CITIES_WEATHER_DATA_DIR']
-CITIES_WEATHER_DATA_DIR = '../../data/datasets/'
-# CITIES_WEATHER_MODELS_DIR = dotenv_values()['CITIES_WEATHER_MODELS_DIR']
-CITIES_WEATHER_MODELS_DIR = '../../data/models'
+CITIES_WEATHER_DATA_DIR = 'data/datasets'
+CITIES_WEATHER_MODELS_DIR = 'data/models'
 
-PRODUCTS = ['humidity', 'pressure', 'temp', 'temp_min', 'temp_max', 'wind_speed', 'weather_category']
+PRODUCTS = ['humidity', 'pressure', 'temp', 'wind_speed', 'weather_category']
 
-def create_products_models(city_name, test_size):
+def create_products_models(city_name):
     df = pd.read_csv(f'{CITIES_WEATHER_DATA_DIR}/{city_name}/{city_name}.csv')
 
     for product in PRODUCTS:
@@ -31,17 +29,17 @@ def create_products_models(city_name, test_size):
 
         match product:
             case 'humidity':
-                create_humidity_model(df, test_size, filename)
+                create_humidity_model(df, filename)
             case 'wind_speed':
-                create_wind_speed_model(df, test_size, filename)
+                create_wind_speed_model(df, filename)
             case 'pressure':
-                create_pressure_model(df, test_size, filename)
+                create_pressure_model(df, filename)
             case 'temp_min':
-                create_temp_min_model(df, test_size, filename)
+                create_temp_min_model(df, filename)
             case 'temp_max':
-                create_temp_max_model(df, test_size, filename)
+                create_temp_max_model(df, filename)
             case 'temp':
-                create_temp_model(df, test_size, filename) 
+                create_temp_model(df, filename) 
             case 'weather_category':
                 create_weather_category_model(df, filename)
         
