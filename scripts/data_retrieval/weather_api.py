@@ -12,7 +12,7 @@ prepared_weather_data_dir = path.join(curdir, "../../data/datasets/")
 
 datetime_format = '%Y-%m-%d:%H'
 
-START_DATE = datetime.strptime('2019-07-22:00', datetime_format)
+START_DATE = datetime.strptime('2023-04-30:00', datetime_format)
 END_DATE = datetime.strptime('2024-03-01:00', datetime_format) 
 print(START_DATE, END_DATE)
 

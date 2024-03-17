@@ -7,7 +7,7 @@ from ..model_training.utils.utils import load_model, load_sklearn_model
 load_dotenv()
 
 
-TARGET_PARAMETERS = ['temp', 'humidity', 'wind_speed', 'pressure', 'temp_min', 'temp_max', 'weather_category']
+TARGET_PARAMETERS = ['temp', 'humidity', 'wind_speed', 'pressure', 'temp_min', 'temp_max', 'weather_description']
 # CITIES_WEATHER_MODELS_DIR = dotenv_values()['CITIES_WEATHER_MODELS_DIR']
 # ROOT_DIR = dotenv_values()['ROOT_DIR']
 
@@ -23,7 +23,7 @@ def predict_city_weather(city_name, prediction_hours):
         for param in TARGET_PARAMETERS:
             m = models[param]
             try:
-                if param != 'weather_category':
+                if param != 'weather_description':
                     future = m.make_future_dataframe(periods=new_prediction_hours, freq='h')
                     forecast = m.predict(future)
 
@@ -41,8 +41,8 @@ def predict_city_weather(city_name, prediction_hours):
                         result = pd.merge(result, forecast, on='timestamp', how='left')
                 else:
                     if isinstance(result, pd.DataFrame):
-                        weather_category = m.predict(result[TARGET_PARAMETERS[:-1]])
-                        result['weather_category'] = weather_category
+                        weather_description = m.predict(result[TARGET_PARAMETERS[:-1]])
+                        result['weather_description'] = weather_description
                         
             except AttributeError as e:
                 return e
@@ -72,13 +72,13 @@ def open_weather_models(city_name, prediction_hours):
     model_last_index = None
     for param in TARGET_PARAMETERS:
         filepath = path.join(path.dirname(path.realpath(__file__)), '../../data/models/', city_name, param)
-        if param == 'weather_category':
+        if param == 'weather_description':
             filepath += '.pkl'
         else:
             filepath += '.json'
 
         if path.isfile(filepath):
-            if param == 'weather_category':
+            if param == 'weather_description':
                 res[param] = load_sklearn_model(filepath)
             else:
                 res[param] = load_model(filepath)
