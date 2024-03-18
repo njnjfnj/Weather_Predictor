@@ -1,5 +1,3 @@
-
-
 # Python  
 scripts/virt/*
 scripts/.env
@@ -11,4 +9,4 @@ api/virt/*
 data/datasets/raw_data/
 
 # Temporary Change to make project structure more clear 
-desktop/
+desktop/*
