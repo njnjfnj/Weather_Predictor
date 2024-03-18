@@ -1,1 +1,1 @@
-__all__ = ['scripts', 'api']
+__all__ = ['scripts', 'api', 'redis_scripts']

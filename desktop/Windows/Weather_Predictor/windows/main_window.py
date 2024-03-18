@@ -7,6 +7,8 @@ import os
 import shutil
 import json
 import numpy as np
+from datetime import datetime
+import pandas as pd
 
 
 #class Widget(QWidget):
@@ -228,6 +230,7 @@ class Main_window(QtWidgets.QWidget):
             url1 = self._config["Host"] + "/Auth"
             headers1={"Authorization": "Bearer " + self._token}
             response = safeRequest("GET", url=url1, headers=headers1)
+            self._authLabel.setText("Authorization...")
 
             if response == None:
                 self._authLabel.setText("Server is unreachable")
@@ -245,18 +248,25 @@ class Main_window(QtWidgets.QWidget):
 
 
     def slotPredictButtonClicked(self):
-        url1 = self._config["Host"] + "/Predict/" + self._country + "-" + self._textLine.text().replace(" ", "")
-        headers1={"Authorization": "Bearer " + self._token}
-        self._buttonPredict.setDisabled(1)
+        url = self._config["Host"] + "/Predict/" + self._country + "-" + self._textLine.text().replace(" ", "")
+        headers={"Authorization": "Bearer " + self._token}        
 
-        response = safeRequest("GET", url=url1, headers=headers1)
+        date_list = pd.date_range(self._dateEdit1.date().toPython(), self._dateEdit2.date().toPython(), freq='D')
+        dates = []
+        for i in date_list: dates.append(i.date().strftime("%d.%m.%Y"))
+        json= {"dates": dates}
+
+        self._buttonPredict.setDisabled(1)
+        self._labelPickedDate.setText("Predicting...")
+
+        response = safeRequest("GET", url=url, headers=headers, json=json)
         if response == None:
             self._labelPickedDate.setText("Server is unreachable")
             self._buttonPredict.setDisabled(0)
             return
 
         if response.status_code == 401:
-            self._labelPickedDate.setText("Unauthorized")
+            self._labelPickedDate.setText("Unauthorized: You have an incorrect/outdated token")
             self._buttonPredict.setDisabled(0)
             return
 
@@ -264,6 +274,7 @@ class Main_window(QtWidgets.QWidget):
 
         #some vizualization stuff
         self._labelPickedDate.setText(response.json()["Data"])
+        #
 
         self._buttonPredict.setDisabled(0)
 
@@ -305,9 +316,9 @@ class Main_window(QtWidgets.QWidget):
 #        super().mouseMoveEvent(ev)
 
 
-def safeRequest(method, url, headers):
+def safeRequest(method, url, headers={}, json={}):
     try:
-        response = requests.request(url=url, method=method, headers=headers)
+        response = requests.request(url=url, method=method, headers=headers, json=json)
         return response
     except Exception as e:
         return None

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 absl-py==2.1.0
 asttokens==2.4.1
 astunparse==1.6.3
@@ -8,6 +9,11 @@ beautifulsoup4==4.12.3
 bleach==6.1.0
 blinker==1.7.0
 cachetools==5.3.3
+=======
+asttokens==2.4.1
+async-timeout==4.0.3
+blinker==1.7.0
+>>>>>>> main
 certifi==2023.11.17
 charset-normalizer==3.3.2
 click==8.1.7
@@ -101,11 +107,6 @@ soupsieve==2.5
 stack-data==0.6.3
 stanio==0.3.0
 statsmodels==0.14.1
-tensorboard==2.15.2
-tensorboard-data-server==0.7.2
-tensorflow-estimator==2.15.0
-tensorflow-io-gcs-filesystem==0.36.0
-termcolor==2.4.0
 threadpoolctl==3.2.0
 tinycss2==1.2.1
 tomli==2.0.1
@@ -116,7 +117,4 @@ typing_extensions==4.10.0
 tzdata==2023.4
 urllib3==2.1.0
 wcwidth==0.2.13
-webencodings==0.5.1
 Werkzeug==3.0.1
-wrapt==1.14.1
-yarg==0.1.9
