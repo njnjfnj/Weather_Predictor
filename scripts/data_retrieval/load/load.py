@@ -5,14 +5,24 @@ from dotenv import load_dotenv, dotenv_values
 from datetime import date, datetime, timedelta
 from time import sleep, mktime
 
-from ..transform.transform import transform_weather_json
+from transform.transform import transform_into_raw, transform_raw_to_prepared
 
+def load_api_key():
+    load_dotenv()
+    return dotenv_values()['API_KEY']
 
-def update_city_info(start_date, end_date, city_row, cities_columns, city_data_dir, city_weather_columns):        
+API_KEY = load_api_key()
+
+datetime_format = '%Y-%m-%d:%H'
+
+def update_city_info(start_date, end_date, city_row, cities_columns, 
+                     raw_weather_data_dir, prepared_weather_data_dir):        
     name_index = cities_columns.index('name')
     lat_index = cities_columns.index('lat')
     lon_index = cities_columns.index('lon')
     
+    city_name = city_row[name_index].lower()
+
     city_time_diff_index = cities_columns.index('utc_time_difference')
     city_time_diff = city_row[city_time_diff_index]
 
@@ -25,46 +35,43 @@ def update_city_info(start_date, end_date, city_row, cities_columns, city_data_d
     #     start_date = start_date + timedelta(hours=city_time_diff)
     #     end_date = end_date + timedelta(hours=city_time_diff)
     
-    while start_date <= end_date:
+    unix_start = mktime(start_date.timetuple())
+    unix_end = mktime(end_date.timetuple())
 
-        next_date = start_date + timedelta(hours=1) 
-        if not time_difference:
-            time_difference = int(city_row[city_time_difference][1:]) * -1 if city_row[city_time_difference][0] == '-' else int(city_row[city_time_difference])
-            start_date = start_date - timedelta(hours=time_difference)
-            next_date = start_date + timedelta(hours=1)
-        
-        url = f'https://history.openweathermap.org/data/2.5/history/city?lat={city_row[lat_index]}&lon={city_row[lon_index]}&type=hour&start={(mktime(start_date.timetuple()))}&end={(mktime(next_date.timetuple()))}&appid={API_KEY}'
+    while unix_start < unix_end:
+        next_date = start_date + timedelta(days=13)
+        url = f'https://api.weatherbit.io/v2.0/history/hourly?lat={city_row[lat_index]}&lon={city_row[lon_index]}&start_date={start_date.strftime("%Y-%m-%d:%H")}&end_date={next_date.strftime("%Y-%m-%d:%H")}&tz=utc&key={API_KEY}'
         
         start_date = next_date
+        unix_start = mktime(start_date.timetuple())
 
-        res = requests.get(url=url).json()
-        transform_load_weather_json(res, city_data_dir, city_row[name_index].lower())
-        
+        try:
+            res = requests.get(url=url).json()
+            transform_into_raw(res, raw_weather_data_dir, prepared_weather_data_dir, city_name)
+        except Exception as e:
+            print(e)
+            break
         sleep(1)
-        
+
+    raw_city_data_dir = path.join(raw_weather_data_dir, city_name)
+    if not path.isdir(raw_city_data_dir):
+        mkdir(raw_city_data_dir)
+
+    raw_city_data_filename = path.join(raw_city_data_dir, city_name+ '.csv')
+
+    prepared_city_data_dir = path.join(prepared_weather_data_dir, city_name)
+    if not path.isdir(prepared_city_data_dir):
+        mkdir(prepared_city_data_dir)
+
+    prepared_city_data_filename = path.join(prepared_city_data_dir, city_name+ '.csv')
     
+    if not path.isfile(raw_city_data_filename):
+        transform_raw_to_prepared(raw_city_data_filename,
+                                    prepared_city_data_filename, existed=False)
+    else:
+        transform_raw_to_prepared(raw_city_data_filename,
+                                    prepared_city_data_filename, existed=True)
+    
+
         
         
-        if path.isdir(city_data_dir):
-            city_directory = path.join(city_data_dir, city_row[name_index].lower())
-            if not path.isdir(city_directory):
-                mkdir(city_directory)
-
-            filename = path.join(city_directory, city_row[name_index].lower() + '.csv')
-            existing_data = []
-            
-            try:
-                with open(filename, 'r') as city_file:
-                    reader = csv.reader(city_file)
-                    existing_data = list(reader)
-            except FileNotFoundError:
-                existing_data = []
-
-            if not existing_data or not existing_data[0] == city_weather_columns:
-                existing_data.insert(0, city_weather_columns)
-
-            existing_data.extend(arr)
-
-            with open(filename, 'w', newline='') as city_file:
-                writer = csv.writer(city_file)
-                writer.writerows(existing_data)

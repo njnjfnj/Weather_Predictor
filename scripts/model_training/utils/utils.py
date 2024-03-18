@@ -1,8 +1,11 @@
 from prophet.serialize import model_to_json, model_from_json
 from pickle import dump, load, dumps
 
+from os import path, makedirs
 from json import JSONDecodeError
+
 def save_model(model, filename):
+    makedirs(path.dirname(filename), exist_ok=True)
     with open(filename, 'w') as fout:
         fout.write(model_to_json(model)) 
         

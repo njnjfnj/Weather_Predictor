@@ -10,8 +10,9 @@ from ...redis_scripts.get import get_city
 load_dotenv()
 
 
-
-TARGET_PARAMETERS = ['temp', 'humidity', 'wind_speed', 'pressure', 'temp_min', 'temp_max', 'weather_category']
+TARGET_PARAMETERS = ['temp', 'humidity', 'wind_speed', 'pressure', 'temp_min', 'temp_max', 'weather_description']
+# CITIES_WEATHER_MODELS_DIR = dotenv_values()['CITIES_WEATHER_MODELS_DIR']
+# ROOT_DIR = dotenv_values()['ROOT_DIR']
 
 def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGET_PARAMETERS):
     city_name = city_name.lower()
@@ -26,7 +27,7 @@ def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGE
         for param in target_params:
             m = models[param]
             try:
-                if param != 'weather_category':
+                if param != 'weather_description':
                     future = m.make_future_dataframe(periods=new_prediction_hours, freq='h')
                     forecast = m.predict(future)
 
@@ -44,8 +45,8 @@ def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGE
                         result = pd.merge(result, forecast, on='timestamp', how='left')
                 else:
                     if isinstance(result, pd.DataFrame):
-                        weather_category = m.predict(result[target_params[:-1]])
-                        result['weather_category'] = weather_category
+                        weather_description = m.predict(result[TARGET_PARAMETERS[:-1]])
+                        result['weather_description'] = weather_description
                         
             except AttributeError as e:
                 return e
@@ -82,13 +83,13 @@ def open_weather_models(city_name, prediction_hours, target_params=TARGET_PARAME
     model_last_index = None
     for param in target_params:
         filepath = path.join(path.dirname(path.realpath(__file__)), '../../data/models/', city_name, param)
-        if param == 'weather_category':
+        if param == 'weather_description':
             filepath += '.pkl'
         else:
             filepath += '.json'
 
         if path.isfile(filepath):
-            if param == 'weather_category':
+            if param == 'weather_description':
                 res[param] = load_sklearn_model(filepath)
             else:
                 res[param] = load_model(filepath)

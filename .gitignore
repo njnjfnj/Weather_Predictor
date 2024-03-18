@@ -61,4 +61,5 @@ __pycache__/*
 .ipynb_checkpoints/*
 virt/*
 api/virt/*
+data/datasets/raw_data/
 
