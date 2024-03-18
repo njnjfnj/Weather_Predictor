@@ -1,12 +1,12 @@
 # Python  
-scripts/virt/*
-scripts/.env
+src/scripts/virt/*
+src/scripts/.env
 __pycache__/*
 *.pyc
 .ipynb_checkpoints/*
 virt/*
 api/virt/*
 data/datasets/raw_data/
-
+*.env
 # Temporary Change to make project structure more clear 
 desktop/*

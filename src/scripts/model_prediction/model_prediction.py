@@ -5,7 +5,7 @@ from dotenv import load_dotenv, dotenv_values
 from sklearn.tree import DecisionTreeClassifier
 from ..model_training.utils.utils import load_model, load_sklearn_model
 from json import loads, dumps
-from ...redis_scripts.get import get_city
+from ...redis.get import get_city
 
 load_dotenv()
 
@@ -82,7 +82,7 @@ def open_weather_models(city_name, prediction_hours, target_params=TARGET_PARAME
     res = {}
     model_last_index = None
     for param in target_params:
-        filepath = path.join(path.dirname(path.realpath(__file__)), '../../data/models/', city_name, param)
+        filepath = path.join(path.dirname(path.realpath(__file__)), '../../../data/models/', city_name, param)
         if param == 'weather_description':
             filepath += '.pkl'
         else:
