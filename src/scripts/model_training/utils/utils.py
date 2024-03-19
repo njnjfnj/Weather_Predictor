@@ -1,40 +1,49 @@
 from prophet.serialize import model_to_json, model_from_json
-from pickle import dump, load, dumps
+from pickle import dump, load, dumps, UnpicklingError
 
 from os import path, makedirs
 from json import JSONDecodeError
 
 import logging
 
-def save_model(model, filename):
+def save_prophet_model(model, filename):
     try:
-        with open(filename, 'w') as fout:
-            try:
-                fout.write(model_to_json(model))
-            except (ValueError, AttributeError) as e:
-                logging.error("Failed to convert Prophet model to json: ")
-                raise e
-                
-    except (FileNotFoundError, PermissionError) as e: 
-        logging.error("Failed to save model for specified path: ")
-        raise e
-
-def load_model(filename):
+        with open_file(filename, 'w') as fout:
+            fout.write(model_to_json(model))
+    except (ValueError, AttributeError) as e:
+        handle_error("Failed to convert Prophet model to json:", e)
+        
+def load_prophet_model(filename):
     try:
-        with open(filename, 'r') as fin:
-            try:
-                return model_from_json(fin.read())
-            except (JSONDecodeError) as e:
-                logging.error("Failed to decode Prophet model from json:")
-                raise e
-    except (FileNotFoundError, PermissionError) as e: 
-        logging.error("Failed to load model for specified path: ")
-        raise e
+        with open_file(filename, 'r') as fin:
+            return model_from_json(fin.read())
+    except JSONDecodeError as e:
+        handle_error("Failed to decode Prophet model from json:", e)
 
 def save_sklearn_model(model, filename):
-    with open(filename, 'wb') as f:
-        dump(model, f)
-        
+    if hasattr(model, 'classes_') and hasattr(model, 'tree_'):
+        try:
+            with open_file(filename, 'wb') as f:
+                dump(model, f)    
+        except (ValueError, TypeError, AttributeError) as e:
+            handle_error("Failed to convert scikit-learn model to .pkl", e)
+    else:
+        raise AttributeError("Failed to convert, model must be fit first (invalid model object)")
+
 def load_sklearn_model(filename):
-    with open(filename, 'rb') as f:
-        return load(f)        
+    try:
+        with open_file(filename, 'rb') as f:
+            return load(f)        
+    except (UnpicklingError, EOFError) as e:
+        handle_error("Failed to decode scikit-learn model from .pkl", e)
+
+def open_file(filename, mode):
+    try:
+        return open(filename, mode)
+    except (FileNotFoundError, PermissionError) as e: 
+        handle_error(f"Failed to open file '{filename}' with mode '{mode}':", e)
+
+def handle_error(message, error):
+
+    logging.error(message)
+    raise error
