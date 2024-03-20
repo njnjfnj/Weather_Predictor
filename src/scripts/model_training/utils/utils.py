@@ -44,6 +44,5 @@ def open_file(filename, mode):
         handle_error(f"Failed to open file '{filename}' with mode '{mode}':", e)
 
 def handle_error(message, error):
-
     logging.error(message)
     raise error

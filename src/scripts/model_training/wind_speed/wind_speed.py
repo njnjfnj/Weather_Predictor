@@ -1,5 +1,5 @@
 from prophet import Prophet
-from ..utils.utils import save_model 
+from ..utils.utils import save_prophet_model 
 def create_wind_speed_model(df, model_filename):
 
     model = Prophet(
@@ -11,7 +11,7 @@ def create_wind_speed_model(df, model_filename):
 
     model.fit(df)
 
-    save_model(model, model_filename)
+    save_prophet_model(model, model_filename)
 
     # future = model.make_future_dataframe(periods=prediction_hours, freq='H')
 
