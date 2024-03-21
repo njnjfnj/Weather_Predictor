@@ -9,6 +9,7 @@ PRODUCT_KEYS =  ['humidity',
     'temp',
     'wind_speed',
     'feels_like',
+    'clouds_percentage'
     'sun_horison_angle',
     'precipitation',
     'wind_direction',
@@ -28,7 +29,8 @@ def create_weather_description_model(df, model_filename):
         handle_error(err_str, AttributeError)
     
     model = DecisionTreeClassifier(random_state=0)
-    model.fit(x, y)    
-    save_sklearn_model(model, model_filename)
+    return {x: "x", y: "y" }    
+    model.fit(x, y)
+    # save_sklearn_model(model, model_filename)
 
 

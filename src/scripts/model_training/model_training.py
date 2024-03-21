@@ -38,6 +38,7 @@ PRODUCTS = {
     'temp': create_basic_prophet_model,
     'wind_speed': create_wind_speed_model,
     'feels_like': create_basic_prophet_model,
+    'clouds_percentage': create_basic_prophet_model,
     'sun_horison_angle': create_basic_prophet_model,
     'precipitation': create_basic_prophet_model,
     'wind_direction': create_basic_prophet_model,
