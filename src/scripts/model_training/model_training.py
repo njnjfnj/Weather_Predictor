@@ -28,7 +28,7 @@ def create_basic_prophet_model(df, model_filename):
         model.fit(df)
         save_prophet_model(model, model_filename)
     except Exception as e:
-        handle_error("Failed to create and save model, exception occured: ", AttributeError)
+        handle_error("Failed to create and save model, exception occured: ", Exception)
 
 
 
@@ -55,7 +55,7 @@ def create_products_models(city_name):
             handle_error("Failed to read: data file for provided city does not exist", FileNotFoundError)
     else: 
         handle_error("Failed to read: directory for cities data does not exist", FileNotFoundError)
-    
+
     for product, create_model in PRODUCTS.items():
         df_columns = df.columns
         if product in df_columns:
@@ -72,7 +72,7 @@ def create_products_models(city_name):
 
         if product == 'weather_description':
             filename = f'{CITIES_WEATHER_MODELS_DIR}/{city_name}/{product}.pkl'
-
+    
         create_model(df, filename)
 
 
