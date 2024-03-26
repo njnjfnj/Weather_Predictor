@@ -5,20 +5,29 @@ from dotenv import load_dotenv, dotenv_values
 from sklearn.tree import DecisionTreeClassifier
 from ..model_training.utils.utils import load_model, load_sklearn_model
 from json import loads, dumps
-from ...redis.get import get_city
+from ...redis.get import get_city, check_city_name, match_time_difference
 
 load_dotenv()
 
 
-TARGET_PARAMETERS = ['temp', 'humidity', 'wind_speed', 'pressure', 'temp_min', 'temp_max', 'weather_description']
-# CITIES_WEATHER_MODELS_DIR = dotenv_values()['CITIES_WEATHER_MODELS_DIR']
-# ROOT_DIR = dotenv_values()['ROOT_DIR']
+TARGET_PARAMETERS = {
+    'humidity',
+    'pressure',
+    'temp',
+    'wind_speed',
+    'feels_like',
+    'clouds_percentage',
+    'sun_horison_angle',
+    'precipitation',
+    'wind_direction',
+    'weather_description'
+}
 
 def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGET_PARAMETERS):
+
     city_name = city_name.lower()
-    print(city_name)
-    checked_city = check_city_name(city_name)
-    if checked_city:
+
+    if check_city_name(city_name):
         result = False
         models_and_time_diff = open_weather_models(city_name, prediction_hours, target_params=target_params)
         models = models_and_time_diff['models']
@@ -67,14 +76,6 @@ def predict_daily_city_weather(city_name, prediction_days):
                                        target_params=['temp_min', 'temp_max', 'weather_category'])
 
 
-def check_city_name(city_name):
-    match = get_city(city_name)
-    match = loads(match)["result"][0]["name"]
-    if match:
-        if match.lower() == city_name.lower(): 
-            return True
-    return False
-
 from time import mktime, time
 
 
@@ -94,25 +95,10 @@ def open_weather_models(city_name, prediction_hours, target_params=TARGET_PARAME
             else:
                 res[param] = load_model(filepath)
                 model_last_index = res[param].history.tail(1)['ds'].iloc[0]
-    print(model_last_index)
-    prediction_hours = match_time_difference(city_name=city_name, 
-                                             prediction_hours=prediction_hours, 
+
+    prediction_hours = prediction_hours + match_time_difference(city_name=city_name, 
                                              model_last_index=model_last_index)
     return {'models': res, 'prediction_hours': prediction_hours}
 
-import csv
-from datetime import datetime, timezone
-from math import ceil
 
-def match_time_difference(city_name, prediction_hours, model_last_index):
-    match = get_city(city_name)
-    match = loads(match)["result"][0]
-    time_difference = match["utc_time_difference"]
-    curr_city_time = datetime.utcnow()
-
-    if time_difference[0] == '-':
-        time_difference = int(time_difference[1:]) * -1
-    else: time_difference = int(time_difference)
-
-    return (int(ceil(((curr_city_time - model_last_index).total_seconds() / 3600))) + time_difference)
 
