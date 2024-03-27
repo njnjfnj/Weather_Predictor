@@ -24,10 +24,10 @@ def construct_searchable_city_name(city_name):
 
 def get_city(city_name, page=0, limit=None):
     offsets, start, end = {}, 0, 0
-    if limit and limit > 0:
-        offsets = construct_offsets(page=page, limit=limit)
-        start = int(offsets["start"])
-        end = int(offsets["end"])
+
+    offsets = construct_offsets(page=page, limit=limit)
+    start = int(offsets["start"])
+    end = int(offsets["end"])
 
     redis_cnt = connect_to_redis(host="redis", port="6379")
     
@@ -61,10 +61,10 @@ def get_city(city_name, page=0, limit=None):
     
 def get_all_cities(page, limit):
     offsets, start, end = {}, 0, 0
-    if limit and limit > 0:
-        offsets = construct_offsets(page=page, limit=limit)
-        start = int(offsets["start"])
-        end = int(offsets["end"])
+
+    offsets = construct_offsets(page=page, limit=limit)
+    start = int(offsets["start"])
+    end = int(offsets["end"])
 
     r = connect_to_redis(host="redis", port="6379")
     res = []
