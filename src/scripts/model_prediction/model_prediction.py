@@ -5,7 +5,7 @@ from dotenv import load_dotenv, dotenv_values
 from sklearn.tree import DecisionTreeClassifier
 from ..model_training.utils.utils import load_model, load_sklearn_model
 from json import loads, dumps
-from ...redis.get import get_city, check_city_name, match_time_difference
+from ...redis.get.get import get_city, check_city_name, match_time_difference
 
 load_dotenv()
 
@@ -67,8 +67,7 @@ def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGE
         json_objects = [dumps(row) for row in data_list]
         
         return {"result": json_objects, "status": "success"}
-    else: return {"result": [], "status": "error"
-}
+    else: return {"result": [], "status": "error"}
     
 def predict_daily_city_weather(city_name, prediction_days):
     hours = prediction_days * 24
