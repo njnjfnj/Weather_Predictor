@@ -3,7 +3,7 @@ from os import path
 from csv import reader
 from dotenv import load_dotenv, dotenv_values
 from sklearn.tree import DecisionTreeClassifier
-from ..model_training.utils.utils import load_model, load_sklearn_model
+from ..model_training.utils.utils import load_prophet_model, load_sklearn_model
 from json import loads, dumps
 from ...redis.get.get import get_city, check_city_name, match_time_difference
 
@@ -92,7 +92,7 @@ def open_weather_models(city_name, prediction_hours, target_params=TARGET_PARAME
             if param == 'weather_description':
                 res[param] = load_sklearn_model(filepath)
             else:
-                res[param] = load_model(filepath)
+                res[param] = load_prophet_model(filepath)
                 model_last_index = res[param].history.tail(1)['ds'].iloc[0]
 
     prediction_hours = prediction_hours + match_time_difference(city_name=city_name, 
