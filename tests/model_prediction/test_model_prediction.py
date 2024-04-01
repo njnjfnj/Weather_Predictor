@@ -5,8 +5,11 @@ from unittest.mock import patch, Mock, MagicMock
 from src.scripts.model_prediction.model_prediction import (load_prophet_model, load_sklearn_model)
 
 from src.scripts.model_prediction.model_prediction import (
-    predict_hourly_city_weather, predict_daily_city_weather, open_weather_models
+    predict_hourly_city_weather, open_weather_models
 )
+
+import pandas as pd 
+
 
 
 @pytest.fixture
@@ -23,7 +26,6 @@ def get_model_target_params():
         'wind_direction',
         'weather_description'
     }
-
 
 
 @pytest.mark.parametrize(("city_name", "prediction_hours", "expected_filepaths", "expected_prediction_hours"),
@@ -83,3 +85,52 @@ def test_open_weather_models(load_sklearn, load_prophet, is_file,
     assert set(result['models'].keys()) == get_model_target_params
     
     assert result['prediction_hours'] == expected_prediction_hours
+
+
+from random import uniform, randint
+
+@pytest.fixture(params=[49])
+def future_prophet_df(request):
+    hours = request.param
+    return pd.DataFrame({"ds": pd.date_range(start="2024-03-29 00:00:00", end="2024-03-31 00:00:00", freq="h"),
+                            "yhat": [uniform(0, 30) for i in range(hours)]})
+
+@pytest.fixture(params=[49])
+def sklearn_DTC_predict(request):
+    hours = request.param
+    return [["Sun", "Rain", "Fog", "Snow"][randint(0, 3)] for i in range(hours)]
+
+def model_predict_side_effect(value):
+    return value
+
+
+@pytest.fixture(params=[['humidity', 'pressure', 'temp','weather_description']])
+def models_dict(request, future_prophet_df, sklearn_DTC_predict):
+    result = {}
+    features = request.param
+    for feature in features:
+        result[feature] = Mock()
+        if feature != 'weather_description':
+            result[feature].make_future_dataframe.return_value = future_prophet_df
+            result[feature].predict.side_effect = model_predict_side_effect
+        else:
+            result[feature].predict.return_value = sklearn_DTC_predict 
+    return result
+
+
+
+@pytest.mark.parametrize(('city_name', 'prediction_hours', 'target_params'),
+                         [("Miami", 240, ['humidity','pressure','temp','weather_description'])]
+                        )
+@patch('src.scripts.model_prediction.model_prediction.check_city_name')
+@patch('src.scripts.model_prediction.model_prediction.open_weather_models')
+def test_predict_hourly_city_weather(open_weather_models_patched, check_city_name, city_name, prediction_hours,
+                                     target_params, models_dict):
+    open_weather_models_patched.return_value = {"models": models_dict, "prediction_hours": prediction_hours}
+    check_city_name.return_value =  True
+    
+    result = predict_hourly_city_weather(city_name=city_name,
+                                         prediction_hours=prediction_hours,
+                                         target_params=target_params)
+    
+    assert result["status"] == "success"

@@ -39,7 +39,6 @@ def create_weather_description_model(df, model_filename):
     model = DecisionTreeClassifier(random_state=0)
 
     model.fit(x, y)
-    print("yahoo")
     save_sklearn_model(model, model_filename)
 
 

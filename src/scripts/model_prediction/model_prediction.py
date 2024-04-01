@@ -54,7 +54,7 @@ def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGE
                         result = pd.merge(result, forecast, on='timestamp', how='left')
                 else:
                     if isinstance(result, pd.DataFrame):
-                        weather_description = m.predict(result[TARGET_PARAMETERS[:-1]])
+                        weather_description = m.predict(result[target_params[:-1]])
                         result['weather_description'] = weather_description
                         
             except AttributeError as e:
@@ -69,11 +69,6 @@ def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGE
         return {"result": json_objects, "status": "success"}
     else: return {"result": [], "status": "error"}
     
-def predict_daily_city_weather(city_name, prediction_days):
-    hours = prediction_days * 24
-    return predict_hourly_city_weather(city_name, prediction_hours=hours, 
-                                       target_params=['temp_min', 'temp_max', 'weather_category'])
-
 
 from time import mktime, time
 
