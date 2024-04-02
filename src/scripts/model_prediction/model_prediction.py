@@ -3,9 +3,9 @@ from os import path
 from csv import reader
 from dotenv import load_dotenv, dotenv_values
 from sklearn.tree import DecisionTreeClassifier
-from ..model_training.utils.utils import load_prophet_model, load_sklearn_model
+from ..model_training.utils.utils import load_prophet_model, load_sklearn_model, handle_error
 from json import loads, dumps
-from ...redis.get.get import get_city, check_city_name, match_time_difference
+from ...redis.get.get import get_city, check_city_name, match_time_difference, construct_searchable_city_names
 
 load_dotenv()
 
@@ -25,9 +25,12 @@ TARGET_PARAMETERS = {
 
 def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGET_PARAMETERS):
 
-    city_name = city_name.lower()
+    if len(set(target_params) - set(TARGET_PARAMETERS)) > 0:
+        handle_error("Failed to make predictions: invalid target parameters provided", ValueError)
 
-    if check_city_name(city_name):
+    city_names = construct_searchable_city_names(city_name)
+
+    if check_city_name(city_names[0]) or check_city_name(city_names[1]):
         result = False
         models_and_time_diff = open_weather_models(city_name, prediction_hours, target_params=target_params)
         models = models_and_time_diff['models']
@@ -57,8 +60,8 @@ def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGE
                         weather_description = m.predict(result[target_params[:-1]])
                         result['weather_description'] = weather_description
                         
-            except AttributeError as e:
-                return e
+            except Exception as e:
+                handle_error("Failed to make predictions, error occured: ", e)
             
         result["timestamp"] = pd.to_datetime(result["timestamp"], unit="s")
         data_list = result[-int(prediction_hours):].to_dict(orient='records')
@@ -67,11 +70,10 @@ def predict_hourly_city_weather(city_name, prediction_hours, target_params=TARGE
         json_objects = [dumps(row) for row in data_list]
         
         return {"result": json_objects, "status": "success"}
-    else: return {"result": [], "status": "error"}
+    else: return {"result": [], "status": "error", "message": f"No data found for {city_names[1]}"}
     
 
 from time import mktime, time
-
 
 def open_weather_models(city_name, prediction_hours, target_params=TARGET_PARAMETERS):
     res = {}
