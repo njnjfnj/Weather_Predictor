@@ -6,7 +6,7 @@ def connect_to_redis(host, port):
 
 def seed_cities():
     r = connect_to_redis(host="redis", port="6379")
-    with open("data/cities/cities.csv", "r") as csv_f:
+    with open("/weather/data/cities/cities.csv", "r") as csv_f:
         lines = list(DictReader(csv_f))
         for row in lines:
             name = row['name']
@@ -25,3 +25,5 @@ def seed_cities():
             })
 
             r.zadd('city_names', {name: 0}) 
+
+seed_cities()

@@ -129,7 +129,8 @@ from datetime import datetime, timezone
 from math import ceil
 
 def match_time_difference(city_name, model_last_index):
-    match = get_city(city_name)
+    match = get_city(city_name, 0, 1, exact_match=True)
+
     match = loads(match)["result"][0]
     time_difference = match["utc_time_difference"]
     curr_UTC_time = datetime.now(timezone.utc)

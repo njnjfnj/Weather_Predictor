@@ -1,7 +1,7 @@
 import flask
 from json import loads
 from flask import make_response, jsonify, request
-from ..scripts.model_prediction.model_prediction import predict_hourly_city_weather, predict_daily_city_weather
+from ..scripts.model_prediction.model_prediction import predict_hourly_city_weather
 from ..redis.get.get import get_city, get_all_cities, get_number_of_cities
 from flask_cors import CORS
 app = flask.Flask(__name__)
@@ -28,14 +28,6 @@ def predict_hourly_weather(city_name, prediction_hours):
     }
     return construct_response(json_data, headers)
     
-@app.route("/predict/<city_name>/days/<prediction_daily>")
-def predict_daily_weather(city_name, prediction_daily):
-    json_data = predict_daily_city_weather(city_name=city_name, prediction_days=prediction_daily)
-    headers = {
-        'Content-Type': 'application/json'
-    }
-    return construct_response(json_data, headers)
-
 
 
 @app.route("/cities/total/", defaults={"city_name": ""})
