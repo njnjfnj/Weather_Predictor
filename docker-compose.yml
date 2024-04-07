@@ -1,9 +1,9 @@
-version: "1.7"
+version: "1.26"
 
 services:
   prediction_api:
     container_name: prediction_api
-    image: weather_predictor_api:1.7
+    image: weather_predictor_api:1.26
     build: .
     environment:
      - FLASK_ENV=development
@@ -19,7 +19,7 @@ services:
   redis:
     container_name: redis 
     image: redis:latest
-    ports:
+    ports:  
      - 6379:6379
     restart: on-failure  
     volumes:

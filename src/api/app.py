@@ -1,11 +1,17 @@
 import flask
+
 from json import loads
 from flask import make_response, jsonify, request
 from ..scripts.model_prediction.model_prediction import predict_hourly_city_weather
 from ..redis.get.get import get_city, get_all_cities, get_number_of_cities
 from flask_cors import CORS
+
+
 app = flask.Flask(__name__)
+
 CORS(app)
+
+
 
 def construct_response(data, headers):
     if_message = ''

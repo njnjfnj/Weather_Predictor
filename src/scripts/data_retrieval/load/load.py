@@ -49,7 +49,6 @@ def update_city_info(start_date, end_date, city_row, cities_columns,
             res = requests.get(url=url).json()
             transform_into_raw(res, raw_weather_data_dir, prepared_weather_data_dir, city_name)
         except Exception as e:
-            print(e)
             break
         sleep(1)
 

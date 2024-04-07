@@ -34,7 +34,7 @@ def get_city(city_name, page=0, limit=None, exact_match=False):
 
     prepared_names = construct_searchable_city_names(city_name)
 
-    if exact_match: prepared_names = prepared_names[-1]
+    if exact_match: prepared_names = [prepared_names[-1]]
 
     city_matches = []
     cursor = 0
@@ -64,7 +64,6 @@ def get_city(city_name, page=0, limit=None, exact_match=False):
         return construct_result(res)
 
     except Exception as e:
-        print(res)
         return construct_result(res, e)
     
 def get_all_cities(page, limit):
@@ -86,7 +85,6 @@ def get_all_cities(page, limit):
         elif (start != end): keys = keys[start:end] 
 
         for key, index in keys:
-            print(key)
             arr = r.hmget(name=key, keys=tuple(hash_table_city_keys))
             res.append({"name": key.decode("UTF-8")})
             for i in range(len(hash_table_city_keys)):
@@ -130,15 +128,12 @@ from math import ceil
 
 def match_time_difference(city_name, model_last_index):
     match = get_city(city_name, 0, 1, exact_match=True)
-
     match = loads(match)["result"][0]
     time_difference = match["utc_time_difference"]
     curr_UTC_time = datetime.now(timezone.utc)
-
     model_last_index = datetime.strptime(model_last_index, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
-    
     if time_difference[0] == '-':
         time_difference = int(time_difference[1:]) * -1
     else: time_difference = int(time_difference)
 
-    return (int(ceil(((curr_UTC_time - model_last_index).total_seconds() / 3600))) + time_difference)
+    return int(ceil(((curr_UTC_time - model_last_index).total_seconds() / 3600))) + time_difference
